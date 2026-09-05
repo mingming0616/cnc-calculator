@@ -276,7 +276,7 @@
 
 <header>
   <h1>CNC刀具轉速進給小幫手</h1>
-  <div class="sub">桃園楊梅廠 · CNC銑床課共用工具</div>
+  <div class="sub">銑床課共用工具</div>
 </header>
 
 <main>
@@ -532,14 +532,34 @@ const ACCESS_CODE = 'cnc2026';
 
 /* ============ 材質資料 ============ */
 const MATERIALS = [
-  {id:'carbon',  name:'碳鋼 / 合金鋼', desc:'一般結構鋼、中碳鋼，好加工的基準材質。', vc:[80,150], tip:'最常見材質，數值可直接當起始參考。'},
-  {id:'stainless',name:'不鏽鋼', desc:'黏刀、散熱差，容易讓刀刃積屑。', vc:[60,100], tip:'轉速別貪快，寧可慢一點、進給穩一點，避免積屑瘤。'},
-  {id:'hardened',name:'工具鋼 / 硬化鋼', desc:'調質或熱處理後硬度較高(HRC45以上)。', vc:[40,80], tip:'刀具磨耗快，建議縮短刀具壽命檢查週期。'},
-  {id:'aluminum',name:'鋁合金', desc:'好切削但容易黏刀、產生積屑瘤。', vc:[200,500], tip:'轉速可以拉高，但要注意排屑與冷卻，避免鋁屑黏在刃口。'},
-  {id:'titanium',name:'鈦合金', desc:'黏刀嚴重、散熱極差，加工難度高。', vc:[30,60], tip:'務必降轉速、充分冷卻，避免刀尖因高溫快速磨耗。'},
-  {id:'copper',  name:'銅 / 黃銅', desc:'軟、導熱好，但太黏刀具易讓表面粗糙。', vc:[150,300], tip:'刀刃要保持鋒利，銳角容易讓工件表面拉毛。'},
-  {id:'plastic', name:'塑膠 / 工程塑膠', desc:'切削阻力小，但怕高溫融化變形。', vc:[300,600], tip:'轉速可以很高，但進給也要跟上，避免刀具在同一點摩擦生熱。'},
+  {id:'carbon',   name:'碳鋼 / 合金鋼', desc:'一般結構鋼、中碳鋼，好加工的基準材質。',
+    vc:{mill:[80,150], drill:[60,100], tap:[8,15]},
+    tip:'最常見材質，數值可直接當起始參考。'},
+  {id:'stainless',name:'不鏽鋼', desc:'黏刀、散熱差，容易讓刀刃積屑。',
+    vc:{mill:[60,100], drill:[40,70], tap:[5,10]},
+    tip:'轉速別貪快，寧可慢一點、進給穩一點，避免積屑瘤。'},
+  {id:'hardened', name:'工具鋼 / 硬化鋼', desc:'調質或熱處理後硬度較高(HRC45以上)。',
+    vc:{mill:[40,80], drill:[20,40], tap:[4,8]},
+    tip:'刀具磨耗快，建議縮短刀具壽命檢查週期。'},
+  {id:'aluminum', name:'鋁合金', desc:'好切削但容易黏刀、產生積屑瘤。',
+    vc:{mill:[200,500], drill:[80,150], tap:[15,30]},
+    tip:'轉速可以拉高，但要注意排屑與冷卻，避免鋁屑黏在刃口。'},
+  {id:'titanium', name:'鈦合金', desc:'黏刀嚴重、散熱極差，加工難度高。',
+    vc:{mill:[30,60], drill:[15,30], tap:[3,6]},
+    tip:'務必降轉速、充分冷卻，避免刀尖因高溫快速磨耗。'},
+  {id:'copper',   name:'銅 / 黃銅', desc:'軟、導熱好，但太黏刀具易讓表面粗糙。',
+    vc:{mill:[150,300], drill:[60,120], tap:[10,20]},
+    tip:'刀刃要保持鋒利，銳角容易讓工件表面拉毛。'},
+  {id:'plastic',  name:'塑膠 / 工程塑膠', desc:'切削阻力小，但怕高溫融化變形。',
+    vc:{mill:[300,600], drill:[100,200], tap:[15,30]},
+    tip:'轉速可以很高，但進給也要跟上，避免刀具在同一點摩擦生熱。'},
 ];
+/* 取得某材質在目前加工型式下的Vc建議範圍(drill也用於絞刀) */
+function vcRangeFor(materialId, op){
+  const m = matById(materialId);
+  const key = (op==='mill') ? 'mill' : (op==='tap' ? 'tap' : 'drill');
+  return m.vc[key];
+}
 
 /* ============ 刀具分類 ============ */
 const CATEGORIES = [
@@ -594,6 +614,8 @@ $('opTypeSeg').addEventListener('click', (e)=>{
   btn.classList.add('active');
   state.op = btn.dataset.op;
   updateOpUI();
+  renderMatChips();
+  applyMaterialDefault();
   calc();
 });
 
@@ -627,12 +649,14 @@ function updateOpUI(){
 
 /* ============ 材質 chips ============ */
 function renderMatChips(){
-  $('matChips').innerHTML = MATERIALS.map(m=>`
+  $('matChips').innerHTML = MATERIALS.map(m=>{
+    const range = vcRangeFor(m.id, state.op);
+    return `
     <button class="chip ${m.id===state.material?'active':''}" data-mat="${m.id}">
       <span class="name">${m.name}</span>
-      <span class="vc">Vc ${m.vc[0]}–${m.vc[1]} m/min</span>
+      <span class="vc">Vc ${range[0]}–${range[1]} m/min</span>
     </button>
-  `).join('');
+  `;}).join('');
 }
 $('matChips').addEventListener('click', (e)=>{
   const chip = e.target.closest('.chip');
@@ -643,9 +667,9 @@ $('matChips').addEventListener('click', (e)=>{
   calc();
 });
 function applyMaterialDefault(){
-  const m = matById(state.material);
-  $('inVc').value = Math.round((m.vc[0]+m.vc[1])/2);
-  $('vcRangeHint').textContent = `(建議 ${m.vc[0]}–${m.vc[1]})`;
+  const range = vcRangeFor(state.material, state.op);
+  $('inVc').value = Math.round((range[0]+range[1])/2);
+  $('vcRangeHint').textContent = `(建議 ${range[0]}–${range[1]})`;
 }
 
 /* ============ 計算邏輯 ============ */
@@ -701,8 +725,9 @@ function calc(){
   }
 
   // Vc range warning
-  if(Vc < m.vc[0]*0.6 || Vc > m.vc[1]*1.4){
-    adviceHtml += adviceRow(false, `目前 Vc(${Vc} m/min) 明顯超出「${m.name}」的建議範圍(${m.vc[0]}–${m.vc[1]})，請確認材質選擇或刀具是否適合，避免燒刀或崩刃。`);
+  const vcRange = vcRangeFor(state.material, state.op);
+  if(Vc < vcRange[0]*0.6 || Vc > vcRange[1]*1.4){
+    adviceHtml += adviceRow(false, `目前 Vc(${Vc} m/min) 明顯超出「${m.name}」在此加工型式下的建議範圍(${vcRange[0]}–${vcRange[1]})，請確認材質選擇或刀具是否適合，避免燒刀或崩刃。`);
   }
 
   // 依刀具直徑/刃數的提示
@@ -765,7 +790,8 @@ function applyToolToCalc(tool){
   state.material = tool.material || state.material;
   renderMatChips();
   if(tool.vc) $('inVc').value = tool.vc; else applyMaterialDefault();
-  $('vcRangeHint').textContent = `(建議 ${matById(state.material).vc[0]}–${matById(state.material).vc[1]})`;
+  const r = vcRangeFor(state.material, state.op);
+  $('vcRangeHint').textContent = `(建議 ${r[0]}–${r[1]})`;
   if(tool.feed && state.op !== 'tap') $('inFeed').value = tool.feed;
 
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.view==='calc'));
@@ -1077,7 +1103,9 @@ function renderMatList(){
     <div class="mat-card">
       <div class="m-name">${m.name}</div>
       <div class="m-desc">${m.desc}</div>
-      <div class="m-range">建議 Vc：${m.vc[0]} – ${m.vc[1]} m/min</div>
+      <div class="m-range">銑削 Vc：${m.vc.mill[0]} – ${m.vc.mill[1]} m/min</div>
+      <div class="m-range">鑽孔／絞刀 Vc：${m.vc.drill[0]} – ${m.vc.drill[1]} m/min</div>
+      <div class="m-range">攻牙 Vc：${m.vc.tap[0]} – ${m.vc.tap[1]} m/min</div>
       <div class="m-tip">💡 ${m.tip}</div>
     </div>
   `).join('');
