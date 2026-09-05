@@ -156,7 +156,7 @@
   nav.tabbar{
     position:fixed; left:0; right:0; bottom:0; z-index:30;
     background:var(--bg-panel); border-top:1px solid var(--border);
-    display:grid; grid-template-columns:repeat(3,1fr);
+    display:grid; grid-template-columns:repeat(4,1fr);
     padding-bottom:env(safe-area-inset-bottom);
   }
   nav.tabbar button{
@@ -276,7 +276,7 @@
 
 <header>
   <h1>CNC刀具轉速進給小幫手</h1>
-  <div class="sub">銑床課共用工具</div>
+  <div class="sub">CNC銑床課共用工具</div>
 </header>
 
 <main>
@@ -381,6 +381,21 @@
     </div>
   </section>
 
+  <!-- ===================== 鑽攻對照表 頁 ===================== -->
+  <section id="view-tapchart" class="view">
+    <div class="panel">
+      <div class="panel-title">鑽孔攻牙底孔對照表</div>
+      <div class="hint" style="margin-bottom:10px;">以 75% 牙合率為基準，數值為業界公告參考值。實際下鑽建議選用比表列數值略大 0.05~0.1mm 的鑽頭，因鑽頭本身多會鑽出略大於標稱的孔徑。</div>
+      <div class="segmented" id="tapStdSeg" style="margin-bottom:10px;">
+        <button data-std="metric" class="active">公制 M系列</button>
+        <button data-std="unc">英制 UNC</button>
+        <button data-std="unf">英制 UNF</button>
+      </div>
+      <input type="text" id="tapSearch" placeholder="搜尋螺紋規格,例如 M6 或 1/4" style="margin-bottom:10px;">
+      <div id="tapList"></div>
+    </div>
+  </section>
+
 </main>
 
 <nav class="tabbar">
@@ -395,6 +410,10 @@
   <button data-view="mat">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
     材質對照
+  </button>
+  <button data-view="tapchart">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+    鑽攻對照
   </button>
 </nav>
 
@@ -560,6 +579,122 @@ function vcRangeFor(materialId, op){
   const key = (op==='mill') ? 'mill' : (op==='tap' ? 'tap' : 'drill');
   return m.vc[key];
 }
+
+/* ============ 鑽孔攻牙底孔對照表資料(75%牙合率,業界公告參考值) ============ */
+const TAP_METRIC = [
+  {size:'M1.6',   pitch:0.35, drill:1.25},
+  {size:'M2',     pitch:0.4,  drill:1.6},
+  {size:'M2.5',   pitch:0.45, drill:2.05},
+  {size:'M3',     pitch:0.5,  drill:2.5},
+  {size:'M3.5',   pitch:0.6,  drill:2.9},
+  {size:'M4',     pitch:0.7,  drill:3.3},
+  {size:'M5',     pitch:0.8,  drill:4.2},
+  {size:'M6',     pitch:1.0,  drill:5.0},
+  {size:'M7',     pitch:1.0,  drill:6.0},
+  {size:'M8',     pitch:1.25, drill:6.8},
+  {size:'M8',     pitch:1.0,  drill:7.0, fine:true},
+  {size:'M10',    pitch:1.5,  drill:8.5},
+  {size:'M10',    pitch:1.25, drill:8.8, fine:true},
+  {size:'M12',    pitch:1.75, drill:10.2},
+  {size:'M12',    pitch:1.5,  drill:10.5, fine:true},
+  {size:'M14',    pitch:2.0,  drill:12.0},
+  {size:'M14',    pitch:1.5,  drill:12.5, fine:true},
+  {size:'M16',    pitch:2.0,  drill:14.0},
+  {size:'M16',    pitch:1.5,  drill:14.5, fine:true},
+  {size:'M18',    pitch:2.5,  drill:15.5},
+  {size:'M18',    pitch:1.5,  drill:16.5, fine:true},
+  {size:'M20',    pitch:2.5,  drill:17.5},
+  {size:'M20',    pitch:1.5,  drill:18.5, fine:true},
+  {size:'M22',    pitch:2.5,  drill:19.5},
+  {size:'M22',    pitch:1.5,  drill:20.5, fine:true},
+  {size:'M24',    pitch:3.0,  drill:21.0},
+  {size:'M24',    pitch:2.0,  drill:22.0, fine:true},
+  {size:'M27',    pitch:3.0,  drill:24.0},
+  {size:'M30',    pitch:3.5,  drill:26.5},
+];
+const TAP_UNC = [
+  {size:'#1-64',   drill:'#53',  drillDec:0.0595},
+  {size:'#2-56',   drill:'#51',  drillDec:0.067},
+  {size:'#3-48',   drill:'5/64', drillDec:0.078},
+  {size:'#4-40',   drill:'#43',  drillDec:0.089},
+  {size:'#5-40',   drill:'#39',  drillDec:0.099},
+  {size:'#6-32',   drill:'#36',  drillDec:0.106},
+  {size:'#8-32',   drill:'#29',  drillDec:0.136},
+  {size:'#10-24',  drill:'#25',  drillDec:0.149},
+  {size:'#12-24',  drill:'#17',  drillDec:0.173},
+  {size:'1/4-20',  drill:'#7',   drillDec:0.201},
+  {size:'5/16-18', drill:'F',    drillDec:0.257},
+  {size:'3/8-16',  drill:'5/16', drillDec:0.3125},
+  {size:'7/16-14', drill:'U',    drillDec:0.368},
+  {size:'1/2-13',  drill:'27/64',drillDec:0.4219},
+  {size:'9/16-12', drill:'31/64',drillDec:0.4844},
+  {size:'5/8-11',  drill:'17/32',drillDec:0.5312},
+  {size:'3/4-10',  drill:'21/32',drillDec:0.6562},
+  {size:'7/8-9',   drill:'49/64',drillDec:0.7656},
+  {size:'1-8',     drill:'7/8',  drillDec:0.875},
+];
+const TAP_UNF = [
+  {size:'#1-72',   drill:'#53',  drillDec:0.0595},
+  {size:'#2-64',   drill:'#50',  drillDec:0.070},
+  {size:'#3-56',   drill:'#46',  drillDec:0.081},
+  {size:'#4-48',   drill:'#42',  drillDec:0.0935},
+  {size:'#5-44',   drill:'#37',  drillDec:0.104},
+  {size:'#6-40',   drill:'#33',  drillDec:0.113},
+  {size:'#8-36',   drill:'#29',  drillDec:0.136},
+  {size:'#10-32',  drill:'#21',  drillDec:0.159},
+  {size:'#12-28',  drill:'#15',  drillDec:0.180},
+  {size:'1/4-28',  drill:'#3',   drillDec:0.213},
+  {size:'5/16-24', drill:'I',    drillDec:0.272},
+  {size:'3/8-24',  drill:'Q',    drillDec:0.332},
+  {size:'7/16-20', drill:'W',    drillDec:0.386},
+  {size:'1/2-20',  drill:'29/64',drillDec:0.4531},
+  {size:'9/16-18', drill:'33/64',drillDec:0.5156},
+  {size:'5/8-18',  drill:'37/64',drillDec:0.5781},
+  {size:'3/4-16',  drill:'11/16',drillDec:0.6875},
+  {size:'7/8-14',  drill:'13/16',drillDec:0.8125},
+  {size:'1-12',    drill:'15/16',drillDec:0.9375},
+];
+let tapStd = 'metric';
+function renderTapList(searchTerm){
+  const term = (searchTerm||'').trim().toLowerCase();
+  const box = $('tapList');
+  let rows = '';
+  if(tapStd === 'metric'){
+    let list = TAP_METRIC;
+    if(term) list = list.filter(r=>r.size.toLowerCase().includes(term));
+    rows = list.map(r=>`
+      <div class="tool-card">
+        <div class="tool-card-top">
+          <div class="t-name">${r.size}${r.fine? ' <span style="color:var(--text-tertiary); font-size:12px;">(細牙)</span>' : ' <span style="color:var(--text-tertiary); font-size:12px;">(粗牙)</span>'} × ${r.pitch}</div>
+          <div class="t-name mono" style="color:var(--accent);">Ø${r.drill}mm</div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    let list = tapStd === 'unc' ? TAP_UNC : TAP_UNF;
+    if(term) list = list.filter(r=>r.size.toLowerCase().includes(term));
+    rows = list.map(r=>`
+      <div class="tool-card">
+        <div class="tool-card-top">
+          <div class="t-name">${r.size}</div>
+          <div class="t-name mono" style="color:var(--accent);">${r.drill} <span style="color:var(--text-tertiary); font-size:11px;">(${r.drillDec}")</span></div>
+        </div>
+      </div>
+    `).join('');
+  }
+  box.innerHTML = rows || `<div class="empty-state">找不到符合「${searchTerm}」的規格</div>`;
+}
+$('tapStdSeg').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('#tapStdSeg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  tapStd = btn.dataset.std;
+  $('tapSearch').value = '';
+  renderTapList('');
+});
+$('tapSearch').addEventListener('input', (e)=>renderTapList(e.target.value));
+
 
 /* ============ 刀具分類 ============ */
 const CATEGORIES = [
@@ -1117,6 +1252,7 @@ function init(){
   applyMaterialDefault();
   updateOpUI();
   renderMatList();
+  renderTapList('');
   calc();
   startLibrarySync();
 }
