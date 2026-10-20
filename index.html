@@ -8,8 +8,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CNC小幫手">
 <title>CNC刀具轉速進給小幫手</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-base:#1B1D21;
@@ -36,14 +39,14 @@
       radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0) 0 0/22px 22px,
       var(--bg-base);
     color:var(--text-primary);
-    font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',-apple-system,sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
     padding-bottom:80px;
   }
-  h1,h2,h3{font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:0.01em; margin:0;}
-  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
-  button{font-family:'IBM Plex Sans',sans-serif; -webkit-tap-highlight-color:transparent;}
+  h1,h2,h3{font-family:'Noto Sans TC',sans-serif; font-weight:700; letter-spacing:0.02em; margin:0;}
+  .mono{font-family:'Roboto Mono','Noto Sans TC',monospace;font-variant-numeric:tabular-nums;}
+  button{font-family:'Noto Sans TC',sans-serif; -webkit-tap-highlight-color:transparent;}
   button:not(:disabled):active{transform:scale(.97);}
 
   header{
@@ -63,9 +66,7 @@
   .brand-mark svg{width:22px; height:22px; stroke:#1B1D21;}
   header h1{font-size:18px;}
   header .sub{font-size:12px; color:var(--text-secondary); margin-top:1px;}
-  .view-title{font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:.14em; color:var(--accent); margin-left:auto; text-transform:uppercase; opacity:.9; text-align:right;}
 
-  @media (max-width:440px){ .view-title{display:none;} }
   main{max-width:640px; margin:0 auto; padding:14px 14px 10px;}
 
   .panel{
@@ -108,13 +109,14 @@
   input[type=number], input[type=text], input[type=password], select{
     width:100%; background:var(--bg-input); border:1px solid var(--border-strong);
     color:var(--text-primary); border-radius:var(--radius); padding:11px 12px;
-    font-size:16px; font-family:'IBM Plex Mono',monospace;
+    font-size:16px; font-family:'Roboto Mono','Noto Sans TC',monospace;
     transition:border-color .15s, box-shadow .15s;
   }
-  input::placeholder{color:var(--text-tertiary); font-family:'IBM Plex Sans',sans-serif;}
+  input[type=text], input[type=password]{font-family:'Noto Sans TC',sans-serif;}
+  input::placeholder{color:var(--text-tertiary); font-family:'Noto Sans TC',sans-serif;}
   input:focus, select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow);}
   button:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
-  select{font-family:'IBM Plex Sans',sans-serif; font-size:14.5px;}
+  select{font-family:'Noto Sans TC',sans-serif; font-size:14.5px;}
   select option, select optgroup{background:var(--bg-input);}
 
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
@@ -127,7 +129,7 @@
     transition:border-color .15s, background .15s;
   }
   .chip .name{font-size:13.5px; font-weight:600; display:block;}
-  .chip .vc{font-size:11px; color:var(--text-tertiary); font-family:'IBM Plex Mono',monospace;}
+  .chip .vc{font-size:11px; color:var(--text-tertiary); font-family:'Roboto Mono','Noto Sans TC',monospace;}
   .chip.active{border-color:var(--accent); background:var(--accent-glow);}
   .chip.active .name{color:var(--accent);}
 
@@ -151,7 +153,7 @@
   .readout-row:last-child{border-bottom:none;}
   .readout-label{font-size:12.5px; color:var(--text-secondary);}
   .readout-value{font-size:28px; color:var(--accent); font-weight:600; text-align:right; text-shadow:0 0 18px rgba(242,169,60,.25);}
-  .readout-value .unit{font-size:13px; color:var(--text-tertiary); margin:0 2px 0 4px; font-family:'IBM Plex Sans',sans-serif; text-shadow:none;}
+  .readout-value .unit{font-size:13px; color:var(--text-tertiary); margin:0 2px 0 4px; font-family:'Noto Sans TC',sans-serif; text-shadow:none;}
   .readout-value.small{font-size:16px; color:var(--text-primary); text-shadow:none;}
   .readout-value.mid{font-size:20px;}
   .gcode{
@@ -257,7 +259,7 @@
   }
   .op-head{display:flex; align-items:center; gap:6px; margin-bottom:8px;}
   .op-no{
-    font-family:'Oswald',sans-serif; font-size:13px; color:#1B1D21; background:var(--accent);
+    font-family:'Noto Sans TC',sans-serif; font-size:13px; color:#1B1D21; background:var(--accent);
     width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
   .op-head select{padding:8px 10px; font-size:13.5px; flex:1; min-width:0;}
@@ -283,7 +285,7 @@
   table.data{width:100%; border-collapse:collapse; font-size:12.5px;}
   table.data th{color:var(--text-tertiary); font-weight:500; text-align:left; padding:6px 4px; border-bottom:1px solid var(--border-strong);}
   table.data td{padding:7px 4px; border-bottom:1px solid var(--border);}
-  table.data td.num, table.data th.num{text-align:right; font-family:'IBM Plex Mono',monospace;}
+  table.data td.num, table.data th.num{text-align:right; font-family:'Roboto Mono','Noto Sans TC',monospace;}
 
   .modal-backdrop{
     position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50;
@@ -306,12 +308,12 @@
   .mat-card{background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:8px;}
   .mat-card .m-name{font-size:14.5px; font-weight:600;}
   .mat-card .m-desc{font-size:12.5px; color:var(--text-secondary); margin-top:3px; line-height:1.55;}
-  .mat-card .m-range{margin-top:6px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--accent);}
+  .mat-card .m-range{margin-top:6px; font-size:12px; font-family:'Roboto Mono','Noto Sans TC',monospace; color:var(--accent);}
   .mat-card .m-tip{font-size:11.5px; color:var(--text-tertiary); margin-top:6px; line-height:1.5;}
 
   .result-box{background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-top:12px;}
   .result-line{display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:5px 0; font-size:13px;}
-  .result-line .v{font-family:'IBM Plex Mono',monospace; color:var(--accent); font-size:16px; font-weight:600; text-align:right;}
+  .result-line .v{font-family:'Roboto Mono','Noto Sans TC',monospace; color:var(--accent); font-size:16px; font-weight:600; text-align:right;}
   .result-line .k{color:var(--text-secondary);}
   .divider{border-top:1px solid var(--border); margin:6px 0;}
   .fit-tag{display:inline-block; padding:3px 10px; border-radius:12px; font-size:12.5px; font-weight:600;}
@@ -320,6 +322,8 @@
   .fit-tag.press{background:rgba(226,88,91,.15); color:var(--warn);}
   .quick-row{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
   .quick-row button{background:var(--bg-input); border:1px solid var(--border-strong); color:var(--text-secondary); border-radius:14px; padding:5px 11px; font-size:12px; cursor:pointer;}
+  .unit-tag{position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:11.5px; color:var(--text-tertiary); pointer-events:none;}
+  #unitList input{padding-right:62px;}
   .bolt-svg{width:100%; max-width:260px; display:block; margin:12px auto 4px;}
 
   .toast{
@@ -372,7 +376,6 @@
       <h1>CNC刀具轉速進給小幫手</h1>
       <div class="sub">CNC銑床課共用工具</div>
     </div>
-    <div class="view-title" id="viewTitle">Cutting</div>
   </div>
 </header>
 
@@ -506,6 +509,14 @@
           <span class="readout-label">單件刀具成本</span>
           <span class="readout-value mono mid" id="jobToolCost">—</span>
         </div>
+        <div class="readout-row" id="jobMachineCostRow" style="display:none;">
+          <span class="readout-label">單件加工費 (機台)</span>
+          <span class="readout-value mono mid" id="jobMachineCost">—</span>
+        </div>
+        <div class="readout-row" id="jobTotalCostRow" style="display:none;">
+          <span class="readout-label">單件總成本</span>
+          <span class="readout-value mono mid" id="jobTotalCost">—</span>
+        </div>
       </div>
       <div class="time-bar" id="timeBar"><span style="background:var(--accent)"></span><span style="background:var(--info)"></span><span style="background:var(--ok)"></span></div>
       <div class="legend" id="timeLegend"></div>
@@ -518,6 +529,10 @@
         <div><label class="first" for="cp_eff">稼動率 %</label><input type="number" id="cp_eff" inputmode="decimal"></div>
         <div><label class="first" for="cp_shifts">每天班數</label><input type="number" id="cp_shifts" inputmode="numeric"></div>
       </div>
+      <div class="row2">
+        <div><label for="cp_machines">投入機台數</label><input type="number" id="cp_machines" inputmode="numeric"></div>
+        <div><label for="cp_rate">機台時費率 (元/小時)</label><input type="number" id="cp_rate" placeholder="選填，算加工費" inputmode="decimal"></div>
+      </div>
       <div class="result-box" id="capBox"></div>
     </div>
 
@@ -527,8 +542,10 @@
     </div>
 
     <div class="btn-row" style="margin-bottom:12px;">
-      <button class="btn btn-primary" id="jobSaveBtn">儲存到雲端（全課共用）</button>
+      <button class="btn btn-ghost" id="jobCopyBtn" style="flex:0 0 38%;">複製文字摘要</button>
+      <button class="btn btn-primary" id="jobSaveBtn">儲存到雲端</button>
     </div>
+    <div class="hint" style="margin:-4px 2px 14px;">文字摘要可以直接貼到 LINE 或 Email 給主管、業務。</div>
   </section>
 
   <!-- ===================== 刀具庫 ===================== -->
@@ -599,9 +616,10 @@
 
   <!-- ===================== 工具 ===================== -->
   <section id="view-tool" class="view">
-    <div class="segmented two subseg mb" data-group="tool">
-      <button data-sub="tool-bolt" class="active">螺栓孔圓座標</button>
-      <button data-sub="tool-rough">粗糙度 / 殘留高度</button>
+    <div class="segmented subseg mb" data-group="tool">
+      <button data-sub="tool-bolt" class="active">螺栓孔座標</button>
+      <button data-sub="tool-rough">粗糙度</button>
+      <button data-sub="tool-unit">單位換算</button>
     </div>
 
     <div class="sub-view active" id="tool-bolt" data-group="tool">
@@ -612,9 +630,9 @@
           <div><label class="first" for="bc_n">孔數</label><input type="number" id="bc_n" placeholder="例如 6" inputmode="numeric"></div>
         </div>
         <div class="row3">
-          <div><label for="bc_start">起始角度 °</label><input type="number" id="bc_start" value="0" inputmode="decimal"></div>
-          <div><label for="bc_cx">圓心 X</label><input type="number" id="bc_cx" value="0" inputmode="decimal"></div>
-          <div><label for="bc_cy">圓心 Y</label><input type="number" id="bc_cy" value="0" inputmode="decimal"></div>
+          <div><label for="bc_start">起始角度 °</label><input type="number" id="bc_start" value="0"></div>
+          <div><label for="bc_cx">圓心 X</label><input type="number" id="bc_cx" value="0"></div>
+          <div><label for="bc_cy">圓心 Y</label><input type="number" id="bc_cy" value="0"></div>
         </div>
         <label>排列方向</label>
         <div class="segmented two" id="bc_dir">
@@ -649,6 +667,13 @@
         <input type="number" id="sc_h" placeholder="例如 3" inputmode="decimal">
         <div id="scResult"></div>
         <div class="hint">以平面計算；斜面、曲面的實際殘留高度會不同。</div>
+      </div>
+    </div>
+    <div class="sub-view" id="tool-unit" data-group="tool">
+      <div class="panel">
+        <div class="panel-title"><span class="pt">公制 ↔ 英制換算</span><span class="pt-side">任一邊輸入都會自動換算</span></div>
+        <div id="unitList"></div>
+        <div class="hint">英制刀具型錄常用：SFM = 每分鐘表面英尺、IPM = 每分鐘英吋、IPT = 每刃英吋。</div>
       </div>
     </div>
   </section>
@@ -958,11 +983,9 @@ const pickedCat = ()=> state.pickedTool ? state.pickedTool.category : null;
 const curRange = matId => vcRangeFor(matId, state.op, state.toolMat, pickedCat());
 
 /* ============ 分頁 ============ */
-const VIEW_TITLES = {calc:'Cutting', job:'Cycle & Cost', lib:'Tool Library', ref:'Reference', tool:'Utilities'};
 function switchView(view){
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+view));
-  $('viewTitle').textContent = VIEW_TITLES[view] || '';
   window.scrollTo(0,0);
   if(view === 'job') renderOps();
 }
@@ -1191,7 +1214,7 @@ function pushRecent(toolId){
 /* =====================================================================
    工時成本
    ===================================================================== */
-const CAP_DEFAULTS = {hours:10.5, eff:90, shifts:1};
+const CAP_DEFAULTS = {hours:10.5, eff:90, shifts:1, machines:1, rate:null};
 const JOB_DEFAULTS = {changeSec:8, loadSec:60};
 let job = null;
 let jobDirty = false;
@@ -1335,6 +1358,14 @@ function recalcJob(){
 
   $('jobCycle').innerHTML = cycle > 0 ? fmtTime(cycle).replace(/ (秒|分|小時)/g,'<span class="unit">$1</span>') : '—';
   $('jobToolCost').innerHTML = results.some(c=>c.cost!==null) ? `${fmtMoney(toolCost)} <span class="unit">/件</span>` : '—';
+  const rate = num('cp_rate');
+  const machineCost = (rate > 0 && cycle > 0) ? cycle/3600*rate : null;
+  $('jobMachineCostRow').style.display = machineCost !== null ? '' : 'none';
+  $('jobTotalCostRow').style.display = machineCost !== null ? '' : 'none';
+  if(machineCost !== null){
+    $('jobMachineCost').innerHTML = `${fmtMoney(machineCost)} <span class="unit">/件</span>`;
+    $('jobTotalCost').innerHTML = `${fmtMoney(machineCost + toolCost)} <span class="unit">/件</span>`;
+  }
 
   const tot = cycle || 1;
   const segs = $('timeBar').children;
@@ -1349,17 +1380,19 @@ function recalcJob(){
 
   renderCapacity(cycle);
   renderToolNeeds(results);
-  return { cycle, toolCost };
+  return { cycle, toolCost, machineCost, results, cutSec, changeSec, loadSec };
 }
 
 function capSettings(){
   const s = store.get('cap-settings') || {};
   const ok = v => typeof v === 'number' && v > 0;
-  return { hours: ok(s.hours) ? s.hours : CAP_DEFAULTS.hours, eff: ok(s.eff) ? s.eff : CAP_DEFAULTS.eff, shifts: ok(s.shifts) ? s.shifts : CAP_DEFAULTS.shifts };
+  return { hours: ok(s.hours) ? s.hours : CAP_DEFAULTS.hours, eff: ok(s.eff) ? s.eff : CAP_DEFAULTS.eff,
+           shifts: ok(s.shifts) ? s.shifts : CAP_DEFAULTS.shifts, machines: ok(s.machines) ? s.machines : CAP_DEFAULTS.machines,
+           rate: ok(s.rate) ? s.rate : null };
 }
 function renderCapacity(cycle){
   const box = $('capBox');
-  const h = num('cp_hours'), eff = num('cp_eff'), shifts = num('cp_shifts') || 1;
+  const h = num('cp_hours'), eff = num('cp_eff'), shifts = num('cp_shifts') || 1, machines = Math.max(1, Math.round(num('cp_machines') || 1));
   if(!(cycle > 0) || !(h > 0) || !(eff > 0)){
     box.innerHTML = `<div class="hint" style="margin:0;">加入工序並填好資料後，這裡會顯示每班/每天產能與交期。</div>`;
     return;
@@ -1371,14 +1404,16 @@ function renderCapacity(cycle){
   let html = `
     <div class="result-line"><span class="k">每小時(含稼動率)</span><span class="v">${fmtNum(3600*eff/100/cycle,1)} 件</span></div>
     <div class="result-line"><span class="k">每班可做 (${h} 小時 × ${eff}%)</span><span class="v">${fmtNum(perShift)} 件</span></div>
-    <div class="result-line"><span class="k">每天可做 (${shifts} 班)</span><span class="v">${fmtNum(perDay)} 件</span></div>`;
+    <div class="result-line"><span class="k">每天可做 (${shifts} 班${machines>1 ? ` × ${machines} 台` : ''})</span><span class="v">${fmtNum(perDay*machines)} 件</span></div>`;
   if(qty > 0){
     const machineH = qty * cycle / 3600;
-    const days = perDay > 0 ? Math.ceil(qty / perDay) : null;
+    const days = perDay > 0 ? Math.ceil(qty / (perDay*machines)) : null;
     html += `<div class="divider"></div>
       <div class="result-line"><span class="k">${fmtNum(qty)} 件純加工時間</span><span class="v">${fmtNum(machineH,1)} 小時</span></div>
       <div class="result-line"><span class="k">含稼動率實際需要</span><span class="v">${fmtNum(machineH/(eff/100),1)} 小時</span></div>
-      <div class="result-line"><span class="k">需要天數 (1 台機)</span><span class="v">${days ? days + ' 天' : '—'}</span></div>`;
+      <div class="result-line"><span class="k">需要天數 (${machines} 台機)</span><span class="v">${days ? days + ' 天' : '—'}</span></div>`;
+    const rate = num('cp_rate');
+    if(rate > 0) html += `<div class="result-line"><span class="k">${fmtNum(qty)} 件加工費 (機台)</span><span class="v">${fmtMoney(machineH*rate)}</span></div>`;
   } else {
     html += `<div class="hint">填上「需求件數」可以算出需要幾天完成。</div>`;
   }
@@ -1431,8 +1466,9 @@ $('jb_material').innerHTML = MATERIALS.map(m=>`<option value="${m.id}">${m.name}
     if(id==='jb_material') renderOps(); else recalcJob();
   });
 });
-['cp_hours','cp_eff','cp_shifts'].forEach(id=>$(id).addEventListener('input', ()=>{
-  store.set('cap-settings', { hours:num('cp_hours'), eff:num('cp_eff'), shifts:num('cp_shifts') });
+['cp_hours','cp_eff','cp_shifts','cp_machines','cp_rate'].forEach(id=>$(id).addEventListener('input', ()=>{
+  const v = k => { const x = num(k); return x > 0 ? x : null; };
+  store.set('cap-settings', { hours:v('cp_hours'), eff:v('cp_eff'), shifts:v('cp_shifts'), machines:v('cp_machines'), rate:v('cp_rate') });
   recalcJob();
 }));
 
@@ -1497,6 +1533,31 @@ $('jobSaveBtn').addEventListener('click', ()=>{
   });
   jobDirty = false; saveDraft(); updateJobStatus();
   toast('已儲存到雲端');
+});
+function jobSummaryText(){
+  const r = recalcJob();
+  const L = [];
+  L.push(`【工件】${job.name || '(未命名)'}${job.partNo ? ' (' + job.partNo + ')' : ''}`);
+  L.push(`材質：${matById(job.material).name}${job.qty > 0 ? `　需求：${fmtNum(job.qty)} 件` : ''}`);
+  L.push('工序：');
+  r.results.forEach((c,i)=>{
+    const t = c.min ? fmtTime(c.min*60) : '資料不完整';
+    L.push(`${i+1}. ${c.name}${c.S && c.F ? `  S${c.S} F${c.F}` : ''}  切削 ${t}${c.cost !== null ? `  刀具 ${fmtMoney(c.cost)}/件` : ''}`);
+  });
+  L.push(`單件工時：${fmtTime(r.cycle)}（切削 ${fmtTime(r.cutSec)}＋換刀 ${fmtTime(r.changeSec)}＋上下料 ${fmtTime(r.loadSec)}）`);
+  if(r.results.some(c=>c.cost!==null)) L.push(`單件刀具成本：${fmtMoney(r.toolCost)}`);
+  if(r.machineCost !== null) L.push(`單件加工費：${fmtMoney(r.machineCost)}　單件總成本：${fmtMoney(r.machineCost + r.toolCost)}`);
+  const h = num('cp_hours'), eff = num('cp_eff'), shifts = num('cp_shifts') || 1, machines = Math.max(1, Math.round(num('cp_machines') || 1));
+  if(r.cycle > 0 && h > 0 && eff > 0){
+    const perShift = Math.floor(h*3600*eff/100 / r.cycle);
+    L.push(`產能：每班 ${fmtNum(perShift)} 件（${h} 小時 × 稼動率 ${eff}%）`);
+    if(job.qty > 0 && perShift > 0) L.push(`交期：${fmtNum(job.qty)} 件約需 ${Math.ceil(job.qty/(perShift*shifts*machines))} 天（每天 ${shifts} 班、${machines} 台機）`);
+  }
+  return L.join('\n');
+}
+$('jobCopyBtn').addEventListener('click', ()=>{
+  if(!job.ops.length){ toast('請先新增工序'); return; }
+  copyText(jobSummaryText());
 });
 $('jobOpenBtn').addEventListener('click', ()=>{
   $('jobsSearch').value = ''; renderJobsList('');
@@ -2091,6 +2152,38 @@ function renderScallop(){
 }
 ['sc_d','sc_s','sc_h'].forEach(id=>$(id).addEventListener('input', renderScallop));
 
+/* 單位換算:左邊公制,右邊英制,右 = 左 × k */
+const UNIT_PAIRS = [
+  {name:'長度',          a:'mm',      b:'inch', k:1/25.4,   dec:[3,4]},
+  {name:'切削速度',      a:'m/min',   b:'SFM',  k:3.28084,  dec:[1,1]},
+  {name:'進給速度',      a:'mm/min',  b:'IPM',  k:1/25.4,   dec:[1,2]},
+  {name:'每刃/每轉進給', a:'mm',      b:'IPT/IPR', k:1/25.4, dec:[4,5]},
+  {name:'硬度參考',      a:'HRC',     b:'HB (約)', hrc:true, dec:[1,0]},
+];
+/* HRC ↔ HB 近似對照(ASTM E140 鋼材,20~60 HRC) */
+const HRC_HB = [[20,226],[25,253],[30,286],[35,327],[40,371],[45,421],[50,481],[55,546],[60,613]];
+function hrcToHb(h){ return interp(HRC_HB, h); }
+function hbToHrc(hb){ return interp(HRC_HB.map(([a,b])=>[b,a]), hb); }
+$('unitList').innerHTML = UNIT_PAIRS.map((u,i)=>`
+  <label${i===0?' class="first"':''}>${u.name}</label>
+  <div class="row2">
+    <div style="position:relative;"><input type="number" inputmode="decimal" data-u="${i}" data-side="a" placeholder="${u.a}" aria-label="${u.name} ${u.a}"><span class="unit-tag">${u.a}</span></div>
+    <div style="position:relative;"><input type="number" inputmode="decimal" data-u="${i}" data-side="b" placeholder="${u.b}" aria-label="${u.name} ${u.b}"><span class="unit-tag">${u.b}</span></div>
+  </div>`).join('') + `<div class="hint">硬度換算為鋼材近似值，僅適用約 HRC 20～60。</div>`;
+$('unitList').addEventListener('input', e=>{
+  const inp = e.target.closest('input[data-u]'); if(!inp) return;
+  const u = UNIT_PAIRS[+inp.dataset.u], side = inp.dataset.side;
+  const other = $('unitList').querySelector(`input[data-u="${inp.dataset.u}"][data-side="${side==='a'?'b':'a'}"]`);
+  const v = parseFloat(inp.value);
+  if(!isFinite(v)){ other.value = ''; return; }
+  let out;
+  if(u.hrc){
+    if(side==='a') out = (v>=20 && v<=60) ? hrcToHb(v) : NaN;
+    else out = (v>=226 && v<=613) ? hbToHrc(v) : NaN;
+  } else out = side==='a' ? v*u.k : v/u.k;
+  other.value = isFinite(out) ? +out.toFixed(side==='a' ? u.dec[1] : u.dec[0]) : '';
+});
+
 /* ============ Esc 關閉視窗 ============ */
 document.addEventListener('keydown', e=>{
   if(e.key !== 'Escape') return;
@@ -2116,6 +2209,7 @@ function init(){
   jobDirty = !!(draft && draft.dirty);
   const cap = capSettings();
   $('cp_hours').value = cap.hours; $('cp_eff').value = cap.eff; $('cp_shifts').value = cap.shifts;
+  $('cp_machines').value = cap.machines; $('cp_rate').value = cap.rate ?? '';
   fillJobForm(); renderOps();
 
   // 查表 / 工具
@@ -2131,6 +2225,11 @@ function init(){
   initGate();
 }
 init();
+
+/* 註冊離線快取(有網路時一定抓最新版,沒網路才用快取) */
+if('serviceWorker' in navigator && location.protocol === 'https:'){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
