@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="theme-color" content="#1B1D21">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CNC小幫手">
 <title>CNC刀具轉速進給小幫手</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -14,170 +18,198 @@
     --bg-input:#1F2226;
     --accent:#F2A93C;
     --accent-dim:#8A6323;
+    --accent-glow:rgba(242,169,60,0.14);
     --ok:#5FB88A;
     --warn:#E2585B;
+    --info:#6FA8DC;
     --text-primary:#EDEEF0;
     --text-secondary:#9198A1;
     --text-tertiary:#6B7178;
     --border:#3A3F46;
     --border-strong:#4B515A;
-    --radius:6px;
+    --radius:8px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--bg-base);
+    background:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0) 0 0/22px 22px,
+      var(--bg-base);
     color:var(--text-primary);
     font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
-    padding-bottom:76px;
+    padding-bottom:80px;
   }
-  h1,h2,h3,.display{
-    font-family:'Oswald',sans-serif;
-    font-weight:600;
-    letter-spacing:0.01em;
-    margin:0;
-  }
+  h1,h2,h3{font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:0.01em; margin:0;}
   .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
+  button{font-family:'IBM Plex Sans',sans-serif; -webkit-tap-highlight-color:transparent;}
+  button:not(:disabled):active{transform:scale(.97);}
 
-  /* header */
   header{
-    padding:18px 16px 14px;
+    padding:14px 16px 12px;
     border-bottom:1px solid var(--border);
-    background:var(--bg-base);
+    background:linear-gradient(180deg, rgba(36,39,44,0.97), rgba(27,29,33,0.97));
+    backdrop-filter:blur(6px);
     position:sticky; top:0; z-index:20;
   }
-  header h1{font-size:19px; color:var(--text-primary);}
-  header .sub{font-size:12.5px; color:var(--text-secondary); margin-top:3px;}
+  .brand{max-width:640px; margin:0 auto; display:flex; align-items:center; gap:12px;}
+  .brand-mark{
+    width:38px; height:38px; border-radius:9px; flex-shrink:0;
+    background:linear-gradient(145deg, #F7BE62, #D98E1F);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 14px rgba(242,169,60,0.25), inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+  .brand-mark svg{width:22px; height:22px; stroke:#1B1D21;}
+  header h1{font-size:18px;}
+  header .sub{font-size:12px; color:var(--text-secondary); margin-top:1px;}
+  .view-title{font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:.14em; color:var(--accent); margin-left:auto; text-transform:uppercase; opacity:.9; text-align:right;}
 
+  @media (max-width:440px){ .view-title{display:none;} }
   main{max-width:640px; margin:0 auto; padding:14px 14px 10px;}
 
   .panel{
-    background:var(--bg-panel);
+    background:linear-gradient(180deg, #272A30, var(--bg-panel));
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:14px;
     margin-bottom:12px;
+    box-shadow:0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 20px rgba(0,0,0,0.18);
   }
   .panel-title{
-    font-size:13px;
-    color:var(--text-secondary);
-    margin-bottom:10px;
-    display:flex; align-items:center; justify-content:space-between;
+    font-size:12.5px; color:var(--text-secondary); margin-bottom:11px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
   }
-  .hint{font-size:12px; color:var(--text-tertiary); line-height:1.5; margin-top:4px;}
+  .pt{display:flex; align-items:center; gap:8px; font-weight:600; letter-spacing:.04em; color:var(--text-primary);}
+  .pt::before{content:''; width:3px; height:13px; border-radius:2px; background:var(--accent); box-shadow:0 0 8px rgba(242,169,60,.5);}
+  .pt-side{font-size:11.5px; color:var(--text-tertiary); font-weight:400; text-align:right;}
+  .hint{font-size:12px; color:var(--text-tertiary); line-height:1.55; margin-top:6px;}
   .hint.warn-text{color:var(--warn);}
   input.field-error{border-color:var(--warn) !important;}
 
-  /* segmented control */
   .segmented{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    background:var(--bg-input);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:3px;
-    gap:3px;
+    display:grid; grid-template-columns:repeat(3,1fr);
+    background:var(--bg-input); border:1px solid var(--border);
+    border-radius:var(--radius); padding:3px; gap:3px;
   }
+  .segmented.two{grid-template-columns:1fr 1fr;}
+  .segmented.mb{margin-bottom:12px;}
   .segmented button{
     border:none; background:transparent; color:var(--text-secondary);
-    font-family:'IBM Plex Sans',sans-serif; font-size:13.5px; font-weight:600;
-    padding:9px 4px; border-radius:4px; cursor:pointer;
+    font-size:13.5px; font-weight:600; padding:9px 4px; border-radius:6px; cursor:pointer;
+    transition:background .15s, color .15s;
   }
-  .segmented button.active{background:var(--accent); color:#1B1D21;}
+  .segmented button.active{background:var(--accent); color:#1B1D21; box-shadow:0 2px 8px rgba(242,169,60,.3);}
+  .segmented button small{display:block; font-weight:400; font-size:10.5px; opacity:.8;}
+  .segmented.mini button{font-size:12.5px; padding:6px 4px;}
 
   label{display:block; font-size:12.5px; color:var(--text-secondary); margin-bottom:5px; margin-top:12px;}
-  label:first-of-type{margin-top:0;}
-  input[type=number], input[type=text], select{
+  label.first{margin-top:0;}
+  input[type=number], input[type=text], input[type=password], select{
     width:100%; background:var(--bg-input); border:1px solid var(--border-strong);
     color:var(--text-primary); border-radius:var(--radius); padding:11px 12px;
     font-size:16px; font-family:'IBM Plex Mono',monospace;
+    transition:border-color .15s, box-shadow .15s;
   }
   input::placeholder{color:var(--text-tertiary); font-family:'IBM Plex Sans',sans-serif;}
-  input:focus, select:focus, button:focus-visible{
-    outline:2px solid var(--accent); outline-offset:1px;
-  }
+  input:focus, select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow);}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
   select{font-family:'IBM Plex Sans',sans-serif; font-size:14.5px;}
+  select option, select optgroup{background:var(--bg-input);}
 
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
 
-  /* material chips */
-  .chips{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;}
+  .chips{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .chip{
     text-align:left; background:var(--bg-input); border:1px solid var(--border-strong);
     color:var(--text-primary); border-radius:var(--radius); padding:9px 10px; cursor:pointer;
+    transition:border-color .15s, background .15s;
   }
   .chip .name{font-size:13.5px; font-weight:600; display:block;}
   .chip .vc{font-size:11px; color:var(--text-tertiary); font-family:'IBM Plex Mono',monospace;}
-  .chip.active{border-color:var(--accent); background:rgba(242,169,60,0.12);}
+  .chip.active{border-color:var(--accent); background:var(--accent-glow);}
   .chip.active .name{color:var(--accent);}
 
-  /* tool picker */
   .tool-pick-btn{
     width:100%; text-align:left; background:var(--bg-input); border:1px dashed var(--border-strong);
     color:var(--text-secondary); border-radius:var(--radius); padding:11px 12px; font-size:13.5px; cursor:pointer;
+    display:flex; align-items:center; gap:8px;
   }
-  .tool-pick-btn.filled{border-style:solid; border-color:var(--accent); color:var(--text-primary);}
+  .tool-pick-btn svg{width:16px; height:16px; stroke:currentColor; flex-shrink:0;}
+  .tool-pick-btn.filled{border-style:solid; border-color:var(--accent); color:var(--text-primary); background:var(--accent-glow);}
 
-  /* readout */
   .readout{
-    background:var(--bg-panel-raised);
+    position:relative; overflow:hidden;
+    background:linear-gradient(180deg, #30343B, var(--bg-panel-raised));
     border:1px solid var(--border-strong);
     border-radius:var(--radius);
-    padding:16px;
+    padding:6px 16px;
   }
-  .readout-row{display:flex; align-items:baseline; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border);}
+  .readout::before{content:''; position:absolute; left:0; right:0; top:0; height:2px; background:linear-gradient(90deg, transparent, var(--accent), transparent); opacity:.7;}
+  .readout-row{display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);}
   .readout-row:last-child{border-bottom:none;}
   .readout-label{font-size:12.5px; color:var(--text-secondary);}
-  .readout-value{font-size:26px; color:var(--accent); font-weight:600;}
-  .readout-value .unit{font-size:13px; color:var(--text-tertiary); margin-left:4px; font-family:'IBM Plex Sans',sans-serif;}
-  .readout-value.small{font-size:17px; color:var(--text-primary);}
+  .readout-value{font-size:28px; color:var(--accent); font-weight:600; text-align:right; text-shadow:0 0 18px rgba(242,169,60,.25);}
+  .readout-value .unit{font-size:13px; color:var(--text-tertiary); margin:0 2px 0 4px; font-family:'IBM Plex Sans',sans-serif; text-shadow:none;}
+  .readout-value.small{font-size:16px; color:var(--text-primary); text-shadow:none;}
+  .readout-value.mid{font-size:20px;}
+  .gcode{
+    margin-top:10px; padding:8px 12px; background:var(--bg-input); border:1px dashed var(--border-strong);
+    border-radius:var(--radius); font-size:14px; color:var(--text-secondary); display:flex; justify-content:space-between; align-items:center;
+  }
+  .gcode b{color:var(--text-primary); font-weight:600;}
 
   .btn{
-    width:100%; padding:13px; border-radius:var(--radius); border:none; font-size:15px; font-weight:600;
-    font-family:'IBM Plex Sans',sans-serif; cursor:pointer;
+    width:100%; padding:13px; border-radius:var(--radius); border:none; font-size:15px; font-weight:600; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:6px;
   }
-  .btn-primary{background:var(--accent); color:#1B1D21;}
+  .btn:disabled{opacity:.6; cursor:default;}
+  .btn-primary{background:linear-gradient(180deg, #F5B550, var(--accent)); color:#1B1D21; box-shadow:0 3px 10px rgba(242,169,60,.25);}
   .btn-ghost{background:transparent; color:var(--text-secondary); border:1px solid var(--border-strong);}
+  .btn-dashed{background:transparent; color:var(--accent); border:1px dashed var(--accent-dim);}
   .btn-row{display:flex; gap:8px; margin-top:12px;}
   .btn-row .btn{flex:1;}
+  .link-btn{
+    background:none; border:1px solid var(--accent-dim); color:var(--accent); border-radius:5px;
+    padding:3px 9px; font-size:12px; cursor:pointer; margin-left:8px;
+  }
 
   .advice{
-    margin-top:12px; padding:11px 12px; border-radius:var(--radius);
-    background:rgba(95,184,138,0.1); border:1px solid rgba(95,184,138,0.35);
-    font-size:12.5px; line-height:1.6; color:var(--text-primary);
+    margin-top:10px; padding:10px 12px; border-radius:var(--radius);
+    background:rgba(95,184,138,0.08); border:1px solid rgba(95,184,138,0.3); border-left-width:3px;
+    font-size:12.5px; line-height:1.6;
   }
-  .advice.warn{background:rgba(226,88,91,0.1); border-color:rgba(226,88,91,0.4);}
+  .advice.warn{background:rgba(226,88,91,0.08); border-color:rgba(226,88,91,0.4);}
   .advice b{color:var(--ok);}
   .advice.warn b{color:var(--warn);}
 
-  /* bottom nav */
   nav.tabbar{
     position:fixed; left:0; right:0; bottom:0; z-index:30;
-    background:var(--bg-panel); border-top:1px solid var(--border);
-    display:grid; grid-template-columns:repeat(4,1fr);
+    background:rgba(36,39,44,0.97); backdrop-filter:blur(8px); border-top:1px solid var(--border);
+    display:grid; grid-template-columns:repeat(5,1fr);
     padding-bottom:env(safe-area-inset-bottom);
   }
   nav.tabbar button{
-    background:none; border:none; color:var(--text-tertiary); padding:11px 4px 9px;
-    font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:3px;
+    position:relative; background:none; border:none; color:var(--text-tertiary); padding:10px 2px 8px;
+    font-size:11px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
   }
-  nav.tabbar button svg{width:20px; height:20px; stroke:var(--text-tertiary);}
+  nav.tabbar button svg{width:21px; height:21px; stroke:var(--text-tertiary); transition:stroke .15s;}
   nav.tabbar button.active{color:var(--accent);}
   nav.tabbar button.active svg{stroke:var(--accent);}
-
-  .view{display:none;}
-  .view.active{display:block;}
-
-  /* tool library */
-  .cat-header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 2px; cursor:pointer; user-select:none;
+  nav.tabbar button.active::before{
+    content:''; position:absolute; top:0; left:28%; right:28%; height:2px; border-radius:0 0 2px 2px;
+    background:var(--accent); box-shadow:0 0 10px var(--accent);
   }
-  .cat-header h3{font-size:14.5px; color:var(--text-primary);}
-  .cat-header .count{font-size:12px; color:var(--text-tertiary);}
+
+  .view, .sub-view{display:none;}
+  .view.active, .sub-view.active{display:block; animation:fadeUp .2s ease;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion: reduce){ .view.active,.sub-view.active,.modal{animation:none !important;} }
+
+  .cat-header{display:flex; align-items:center; justify-content:space-between; padding:10px 2px; cursor:pointer; user-select:none;}
+  .cat-header h3{font-size:14.5px;}
+  .cat-header .count{font-size:11.5px; color:var(--text-tertiary); background:var(--bg-input); border:1px solid var(--border); border-radius:10px; padding:1px 8px;}
   .cat-chevron{transition:transform .15s ease; stroke:var(--text-tertiary);}
   .cat-body{display:none; padding-bottom:4px;}
   .cat.open .cat-body{display:block;}
@@ -185,78 +217,130 @@
 
   .tool-card{
     background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius);
-    padding:11px 12px; margin-bottom:8px;
+    padding:11px 12px; margin-bottom:8px; transition:border-color .15s;
   }
+  .tool-card.clickable{cursor:pointer;}
+  .tool-card.clickable:hover{border-color:var(--border-strong);}
   .tool-card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
   .tool-card .t-name{font-size:14.5px; font-weight:600;}
   .tool-card .t-brand{font-size:11.5px; color:var(--text-tertiary);}
   .tool-card .t-specs{font-size:12px; color:var(--text-secondary); margin-top:6px; line-height:1.6;}
   .tool-card .t-actions{display:flex; gap:6px; margin-top:9px;}
   .t-actions button{
-    flex:1; padding:7px; font-size:12px; border-radius:5px; border:1px solid var(--border-strong);
+    flex:1; padding:7px 4px; font-size:12px; border-radius:6px; border:1px solid var(--border-strong);
     background:transparent; color:var(--text-secondary); cursor:pointer;
   }
   .t-actions button.use{border-color:var(--accent); color:var(--accent);}
   .t-actions button.del{color:var(--warn); border-color:rgba(226,88,91,0.4);}
+  .tag{color:var(--text-tertiary); font-size:12px; font-weight:400;}
+  .badge{display:inline-block; font-size:11px; padding:1px 7px; border-radius:10px; border:1px solid var(--border-strong); color:var(--text-secondary); margin:0 4px 2px 0;}
+  .badge.money{border-color:rgba(95,184,138,.45); color:var(--ok);}
 
-  .search-bar{
-    display:flex; gap:8px; margin-bottom:10px;
-  }
-  .search-bar input{flex:1;}
+  .search-bar{display:flex; gap:8px; margin-bottom:10px;}
+  .search-bar input{flex:1; min-width:0;}
   .fab{
-    background:var(--accent); color:#1B1D21; border:none; border-radius:var(--radius);
+    background:linear-gradient(180deg, #F5B550, var(--accent)); color:#1B1D21; border:none; border-radius:var(--radius);
     font-size:20px; width:44px; flex-shrink:0; cursor:pointer;
   }
-
-  .empty-state{
-    text-align:center; padding:36px 16px; color:var(--text-tertiary); font-size:13px; line-height:1.7;
+  .icon-btn{
+    background:transparent; color:var(--text-secondary); border:1px solid var(--border-strong);
+    border-radius:var(--radius); font-size:12.5px; padding:0 10px; flex-shrink:0; cursor:pointer;
   }
+  .sync-status{font-size:11.5px; color:var(--ok); margin-bottom:8px;}
+  .sync-status.offline{color:var(--accent);}
+  .list-heading{font-size:12px; color:var(--text-tertiary); margin:4px 2px 8px;}
+  .empty-state{text-align:center; padding:30px 16px; color:var(--text-tertiary); font-size:13px; line-height:1.7;}
 
-  /* modal */
+  .op-card{
+    background:var(--bg-input); border:1px solid var(--border); border-left:3px solid var(--accent-dim);
+    border-radius:var(--radius); padding:10px 10px 10px 11px; margin-bottom:10px;
+  }
+  .op-head{display:flex; align-items:center; gap:6px; margin-bottom:8px;}
+  .op-no{
+    font-family:'Oswald',sans-serif; font-size:13px; color:#1B1D21; background:var(--accent);
+    width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .op-head select{padding:8px 10px; font-size:13.5px; flex:1; min-width:0;}
+  .op-btn{
+    background:transparent; border:1px solid var(--border-strong); color:var(--text-secondary);
+    width:30px; height:34px; border-radius:6px; cursor:pointer; flex-shrink:0; font-size:13px;
+  }
+  .op-btn:disabled{opacity:.35; cursor:default;}
+  .op-btn.del{color:var(--warn); border-color:rgba(226,88,91,0.4);}
+  .op-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .op-grid label{margin-top:0; font-size:11.5px; white-space:nowrap;}
+  .op-grid input{padding:8px 9px; font-size:15px;}
+  .op-type{margin-bottom:8px;}
+  .op-result{font-size:12.5px; color:var(--text-secondary); margin-top:8px; line-height:1.6;}
+  .op-result b{color:var(--text-primary);}
+  .op-result .err{color:var(--warn);}
+
+  .time-bar{display:flex; height:10px; border-radius:5px; overflow:hidden; margin:12px 0 6px; background:var(--bg-input); border:1px solid var(--border);}
+  .time-bar span{display:block; height:100%; transition:width .3s ease;}
+  .legend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:11.5px; color:var(--text-secondary);}
+  .legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+
+  table.data{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.data th{color:var(--text-tertiary); font-weight:500; text-align:left; padding:6px 4px; border-bottom:1px solid var(--border-strong);}
+  table.data td{padding:7px 4px; border-bottom:1px solid var(--border);}
+  table.data td.num, table.data th.num{text-align:right; font-family:'IBM Plex Mono',monospace;}
+
   .modal-backdrop{
-    position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:50;
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50;
     display:none; align-items:flex-end; justify-content:center;
   }
   .modal-backdrop.active{display:flex;}
   .modal{
-    background:var(--bg-panel); width:100%; max-width:640px; border-radius:14px 14px 0 0;
+    position:relative; background:var(--bg-panel); width:100%; max-width:640px; border-radius:16px 16px 0 0;
     padding:18px 16px calc(18px + env(safe-area-inset-bottom));
     max-height:88vh; overflow-y:auto; border-top:1px solid var(--border-strong);
+    animation:slideUp .22s ease;
   }
-  .modal h2{font-size:16px; margin-bottom:14px;}
+  @keyframes slideUp{from{transform:translateY(30px); opacity:.5;} to{transform:none; opacity:1;}}
+  .modal h2{font-size:16px; margin-bottom:14px; padding-right:40px;}
   .modal-close{
-    position:absolute; margin-left:calc(100% - 34px); background:var(--bg-input); border:1px solid var(--border-strong);
+    position:absolute; top:14px; right:14px; background:var(--bg-input); border:1px solid var(--border-strong);
     color:var(--text-secondary); border-radius:50%; width:30px; height:30px; cursor:pointer; font-size:15px;
   }
 
-  /* material reference */
-  .mat-card{
-    background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius);
-    padding:12px; margin-bottom:8px;
-  }
+  .mat-card{background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:8px;}
   .mat-card .m-name{font-size:14.5px; font-weight:600;}
   .mat-card .m-desc{font-size:12.5px; color:var(--text-secondary); margin-top:3px; line-height:1.55;}
-  .mat-card .m-range{
-    margin-top:8px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--accent);
-  }
-  .mat-card .m-tip{font-size:11.5px; color:var(--text-tertiary); margin-top:5px; line-height:1.5;}
+  .mat-card .m-range{margin-top:6px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--accent);}
+  .mat-card .m-tip{font-size:11.5px; color:var(--text-tertiary); margin-top:6px; line-height:1.5;}
+
+  .result-box{background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-top:12px;}
+  .result-line{display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:5px 0; font-size:13px;}
+  .result-line .v{font-family:'IBM Plex Mono',monospace; color:var(--accent); font-size:16px; font-weight:600; text-align:right;}
+  .result-line .k{color:var(--text-secondary);}
+  .divider{border-top:1px solid var(--border); margin:6px 0;}
+  .fit-tag{display:inline-block; padding:3px 10px; border-radius:12px; font-size:12.5px; font-weight:600;}
+  .fit-tag.clear{background:rgba(95,184,138,.15); color:var(--ok);}
+  .fit-tag.trans{background:rgba(111,168,220,.15); color:var(--info);}
+  .fit-tag.press{background:rgba(226,88,91,.15); color:var(--warn);}
+  .quick-row{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .quick-row button{background:var(--bg-input); border:1px solid var(--border-strong); color:var(--text-secondary); border-radius:14px; padding:5px 11px; font-size:12px; cursor:pointer;}
+  .bolt-svg{width:100%; max-width:260px; display:block; margin:12px auto 4px;}
 
   .toast{
-    position:fixed; bottom:88px; left:50%; transform:translateX(-50%) translateY(10px);
+    position:fixed; bottom:92px; left:50%; transform:translateX(-50%) translateY(10px);
     background:var(--bg-panel-raised); border:1px solid var(--border-strong); color:var(--text-primary);
-    padding:10px 16px; border-radius:8px; font-size:13px; z-index:60; opacity:0; transition:all .2s ease; pointer-events:none;
+    padding:10px 16px; border-radius:10px; font-size:13px; z-index:60; opacity:0; transition:all .2s ease; pointer-events:none;
+    display:flex; align-items:center; gap:14px; max-width:calc(100% - 32px); box-shadow:0 8px 24px rgba(0,0,0,.35);
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast.show.has-action{pointer-events:auto;}
+  .toast button{background:none; border:none; color:var(--accent); font-weight:600; font-size:13px; cursor:pointer; padding:0; white-space:nowrap;}
 
-  select option{background:var(--bg-input);}
-
-  /* 存取密碼門檻 */
   #gateOverlay{
-    position:fixed; inset:0; z-index:100; background:var(--bg-base);
+    position:fixed; inset:0; z-index:100;
+    background:radial-gradient(circle at 50% 30%, #2A2D33, var(--bg-base) 70%);
     display:flex; align-items:center; justify-content:center; padding:24px;
   }
   #gateOverlay .gate-box{max-width:300px; width:100%; text-align:center;}
-  #gateOverlay h2{font-size:17px; margin-bottom:6px;}
+  #gateOverlay .brand-mark{width:56px; height:56px; border-radius:14px; margin:0 auto 14px;}
+  #gateOverlay .brand-mark svg{width:30px; height:30px;}
+  #gateOverlay h2{font-size:18px; margin-bottom:6px;}
   #gateOverlay .gate-sub{font-size:12.5px; color:var(--text-secondary); margin-bottom:16px; line-height:1.6;}
   #gateOverlay input{margin-bottom:12px; text-align:center; letter-spacing:2px;}
   #gateError{color:var(--warn); font-size:12.5px; margin-top:10px; min-height:16px;}
@@ -264,86 +348,106 @@
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ic-mill" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6v5l-1 2v4l-2 2-2-2V9L9 7z"/><path d="M10 15l-1 3h6l-1-3"/><path d="M4 21h16"/></symbol>
+  </defs>
+</svg>
+
 <div id="gateOverlay">
   <div class="gate-box">
-    <h2>🔒 部門存取密碼</h2>
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><use href="#ic-mill"/></svg></div>
+    <h2>部門存取密碼</h2>
     <div class="gate-sub">請輸入 CNC銑床課 內部密碼才能使用此工具</div>
-    <input type="password" id="gateInput" inputmode="text" placeholder="請輸入密碼">
+    <input type="password" id="gateInput" placeholder="請輸入密碼" autocomplete="current-password">
     <button class="btn btn-primary" id="gateSubmit">進入</button>
     <div id="gateError"></div>
   </div>
 </div>
 
 <header>
-  <h1>CNC刀具轉速進給小幫手</h1>
-  <div class="sub">CNC銑床課共用工具</div>
+  <div class="brand">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><use href="#ic-mill"/></svg></div>
+    <div>
+      <h1>CNC刀具轉速進給小幫手</h1>
+      <div class="sub">CNC銑床課共用工具</div>
+    </div>
+    <div class="view-title" id="viewTitle">Cutting</div>
+  </div>
 </header>
 
 <main>
 
-  <!-- ===================== 計算 頁 ===================== -->
+  <!-- ===================== 計算 ===================== -->
   <section id="view-calc" class="view active">
 
     <div class="panel">
-      <div class="panel-title">加工型式</div>
+      <div class="panel-title"><span class="pt">加工型式</span></div>
       <div class="segmented" id="opTypeSeg">
-        <button data-op="mill" class="active">銑削<br><span style="font-weight:400;font-size:10.5px;opacity:.8">端銑/面銑</span></button>
-        <button data-op="drill">鑽孔</button>
-        <button data-op="tap">攻牙</button>
+        <button data-op="mill" class="active">銑削<small>端銑/面銑</small></button>
+        <button data-op="drill">鑽孔<small>鑽頭/絞刀</small></button>
+        <button data-op="tap">攻牙<small>絲攻</small></button>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-title">
-        刀具
-        <span style="font-size:11.5px; color:var(--text-tertiary);">可從刀具庫選,或手動輸入</span>
+      <div class="panel-title"><span class="pt">刀具</span><span class="pt-side">可從刀具庫選，或手動輸入</span></div>
+      <div class="segmented two mb" id="toolMatSeg">
+        <button data-tm="carbide" class="active">碳化鎢（硬質合金）</button>
+        <button data-tm="hss">高速鋼 HSS</button>
       </div>
-      <button class="tool-pick-btn" id="pickToolBtn">從刀具庫選擇刀具...</button>
-
+      <button class="tool-pick-btn" id="pickToolBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <span id="pickToolText">從刀具庫選擇刀具...</span>
+      </button>
       <div class="row2">
         <div>
-          <label>刀具直徑 D (mm)</label>
+          <label for="inD" id="dLabel">刀具直徑 D (mm)</label>
           <input type="number" id="inD" placeholder="例如 10" inputmode="decimal">
         </div>
         <div id="zWrap">
-          <label>刃數 Z</label>
+          <label for="inZ">刃數 Z</label>
           <input type="number" id="inZ" placeholder="例如 4" inputmode="numeric">
         </div>
       </div>
       <div id="pitchWrap" style="display:none;">
-        <label>螺距 P (mm) <span style="color:var(--text-tertiary)">— 例如 M6x1.0 就填 1.0</span></label>
+        <label for="inPitch">螺距 P (mm) <span style="color:var(--text-tertiary)">— 例如 M6x1.0 就填 1.0</span></label>
         <input type="number" id="inPitch" placeholder="例如 1.0" inputmode="decimal">
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-title">工件材質</div>
+      <div class="panel-title"><span class="pt">工件材質</span></div>
       <div class="chips" id="matChips"></div>
     </div>
 
     <div class="panel">
-      <label>切削速度 Vc (m/min) <span style="color:var(--text-tertiary)" id="vcRangeHint"></span></label>
+      <div class="panel-title"><span class="pt">切削條件</span></div>
+      <label for="inVc" class="first">切削速度 Vc (m/min) <span style="color:var(--text-tertiary)" id="vcRangeHint"></span></label>
       <input type="number" id="inVc" inputmode="decimal">
       <div id="feedFieldWrap">
-        <label id="feedLabel">每刃進給量 fz (mm/刃)</label>
+        <label for="inFeed" id="feedLabel">每刃進給量 fz (mm/刃)</label>
         <input type="number" id="inFeed" placeholder="例如 0.05" inputmode="decimal">
-        <div class="hint" id="feedHint">轉速太快、進給太小 → 刀具摩擦生熱、容易燒刀；進給太大 → 容易崩刃或啃刀，建議先從建議值中間開始試切。</div>
+        <div class="hint" id="feedSuggest"></div>
       </div>
+      <div class="hint" id="opHint"></div>
+      <label for="inMaxRpm">機台主軸最高轉速 <span style="color:var(--text-tertiary)">(選填，會記在這台手機)</span></label>
+      <input type="number" id="inMaxRpm" placeholder="例如 12000" inputmode="numeric">
     </div>
 
     <div class="panel">
-      <div class="panel-title">計算結果</div>
+      <div class="panel-title"><span class="pt">計算結果</span></div>
       <div class="readout">
         <div class="readout-row">
-          <span class="readout-label">主軸轉速 RPM</span>
-          <span class="readout-value mono" id="outRpm">—</span>
+          <span class="readout-label">主軸轉速 S</span>
+          <span class="readout-value mono" id="outRpm">— <span class="unit">rpm</span></span>
         </div>
         <div class="readout-row">
           <span class="readout-label">進給速度 F</span>
           <span class="readout-value mono" id="outFeed">— <span class="unit">mm/min</span></span>
         </div>
         <div class="readout-row" id="apRow">
-          <span class="readout-label">建議軸向切深 ap</span>
+          <span class="readout-label" id="apLabel">建議軸向切深 ap</span>
           <span class="readout-value small mono" id="outAp">—</span>
         </div>
         <div class="readout-row" id="aeRow">
@@ -351,48 +455,201 @@
           <span class="readout-value small mono" id="outAe">—</span>
         </div>
       </div>
+      <div class="gcode mono" id="gcodeLine" style="display:none;">
+        <span id="gcodeText"></span>
+        <button class="link-btn" id="copyGcode">複製</button>
+      </div>
       <div id="adviceBox"></div>
     </div>
-
   </section>
 
-  <!-- ===================== 刀具庫 頁 ===================== -->
+  <!-- ===================== 工時成本 ===================== -->
+  <section id="view-job" class="view">
+    <div class="panel">
+      <div class="panel-title">
+        <span class="pt">工件資料</span>
+        <span class="pt-side" id="jobStatus">尚未存檔</span>
+      </div>
+      <div class="btn-row" style="margin-top:0; margin-bottom:4px;">
+        <button class="btn btn-ghost" id="jobOpenBtn" style="padding:9px; font-size:13.5px;">開啟已存工件</button>
+        <button class="btn btn-ghost" id="jobNewBtn" style="padding:9px; font-size:13.5px;">新工件</button>
+      </div>
+      <div class="row2">
+        <div><label for="jb_name">工件名稱</label><input type="text" id="jb_name" placeholder="例如 馬達座"></div>
+        <div><label for="jb_part">料號 <span style="color:var(--text-tertiary)">(選填)</span></label><input type="text" id="jb_part" placeholder="例如 A-1023"></div>
+      </div>
+      <div class="row2">
+        <div><label for="jb_material">工件材質</label><select id="jb_material"></select></div>
+        <div><label for="jb_qty">需求件數</label><input type="number" id="jb_qty" placeholder="例如 500" inputmode="numeric"></div>
+      </div>
+      <div class="row2">
+        <div><label for="jb_change">換刀時間 (秒/次)</label><input type="number" id="jb_change" inputmode="decimal"></div>
+        <div><label for="jb_load">上下料時間 (秒/件)</label><input type="number" id="jb_load" inputmode="decimal"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><span class="pt">工序</span><span class="pt-side">灰字為自動值，填了就覆寫</span></div>
+      <div id="opsList"></div>
+      <button class="btn btn-dashed" id="addOpBtn">＋ 新增工序</button>
+      <div class="hint">銑削填「總切削長度」(所有刀路加總)；鑽孔/攻牙填孔數與孔深。時間未含快速移動(G00)，實際會略長。</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><span class="pt">單件工時與成本</span></div>
+      <div class="readout">
+        <div class="readout-row">
+          <span class="readout-label">單件工時</span>
+          <span class="readout-value mono" id="jobCycle">—</span>
+        </div>
+        <div class="readout-row">
+          <span class="readout-label">單件刀具成本</span>
+          <span class="readout-value mono mid" id="jobToolCost">—</span>
+        </div>
+      </div>
+      <div class="time-bar" id="timeBar"><span style="background:var(--accent)"></span><span style="background:var(--info)"></span><span style="background:var(--ok)"></span></div>
+      <div class="legend" id="timeLegend"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><span class="pt">產能 / 交期</span><span class="pt-side">設定會記在這台手機</span></div>
+      <div class="row3">
+        <div><label class="first" for="cp_hours">班別時數</label><input type="number" id="cp_hours" inputmode="decimal"></div>
+        <div><label class="first" for="cp_eff">稼動率 %</label><input type="number" id="cp_eff" inputmode="decimal"></div>
+        <div><label class="first" for="cp_shifts">每天班數</label><input type="number" id="cp_shifts" inputmode="numeric"></div>
+      </div>
+      <div class="result-box" id="capBox"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><span class="pt">刀具成本 / 備刀清單</span><span class="pt-side" id="toolNeedQty"></span></div>
+      <div id="toolNeedBox"></div>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:12px;">
+      <button class="btn btn-primary" id="jobSaveBtn">儲存到雲端（全課共用）</button>
+    </div>
+  </section>
+
+  <!-- ===================== 刀具庫 ===================== -->
   <section id="view-lib" class="view">
     <div class="panel">
-      <div class="panel-title" style="margin-bottom:2px;">
-        部門共用刀具庫 <span style="color:var(--text-tertiary); font-weight:400;">(雲端同步版)</span>
-      </div>
-      <div class="hint" style="margin-bottom:10px;">全單位都能查詢與新增修改，資料即時同步至雲端資料庫。</div>
+      <div class="panel-title"><span class="pt">部門共用刀具庫</span><span class="pt-side">雲端同步</span></div>
+      <div class="sync-status" id="syncStatus"></div>
       <div class="search-bar">
-        <input type="text" id="toolSearch" placeholder="搜尋刀具名稱、直徑...">
-        <button class="fab" id="addToolBtn">＋</button>
+        <input type="text" id="toolSearch" placeholder="搜尋名稱、ERP、直徑...">
+        <button class="icon-btn" id="exportBtn" title="匯出 Excel 備份">匯出</button>
+        <button class="fab" id="addToolBtn" aria-label="新增刀具">＋</button>
       </div>
       <div id="toolLibLoading" class="empty-state">連接雲端資料庫中...</div>
       <div id="toolCategories"></div>
     </div>
   </section>
 
-  <!-- ===================== 材質對照 頁 ===================== -->
-  <section id="view-mat" class="view">
-    <div class="panel">
-      <div class="panel-title">材質切削參考</div>
-      <div class="hint" style="margin-bottom:10px;">以下 Vc 為碳化鎢(硬質合金)刀具的一般建議範圍，僅供參考起始值；實際依機台剛性、刀具懸伸長度、冷卻方式調整。若使用高速鋼(HSS)刀具，轉速建議乘以 0.3～0.5。</div>
-      <div id="matList"></div>
+  <!-- ===================== 查表 ===================== -->
+  <section id="view-ref" class="view">
+    <div class="segmented subseg mb" data-group="ref">
+      <button data-sub="ref-mat" class="active">材質對照</button>
+      <button data-sub="ref-tap">鑽攻對照</button>
+      <button data-sub="ref-tol">公差查詢</button>
+    </div>
+
+    <div class="sub-view active" id="ref-mat" data-group="ref">
+      <div class="panel">
+        <div class="panel-title"><span class="pt">材質切削參考</span></div>
+        <div class="hint" style="margin:0 0 10px;">銑削與鑽孔 Vc 為碳化鎢刀具的一般範圍；攻牙 Vc 為高速鋼絲攻的一般範圍。僅供起始參考，實際依機台剛性、懸伸長度、冷卻方式調整。計算頁切換成「高速鋼 HSS」時，銑削/鑽孔 Vc 會自動乘以 0.4。</div>
+        <div id="matList"></div>
+      </div>
+    </div>
+
+    <div class="sub-view" id="ref-tap" data-group="ref">
+      <div class="panel">
+        <div class="panel-title"><span class="pt">鑽孔攻牙底孔對照表</span></div>
+        <div class="hint" style="margin:0 0 10px;">以 75% 牙合率為基準，數值為業界公告參考值。實際下鑽建議選比表列略大 0.05~0.1mm 的鑽頭。點按鈕可直接帶入計算頁。</div>
+        <div class="segmented mb" id="tapStdSeg">
+          <button data-std="metric" class="active">公制 M系列</button>
+          <button data-std="unc">英制 UNC</button>
+          <button data-std="unf">英制 UNF</button>
+        </div>
+        <input type="text" id="tapSearch" placeholder="搜尋螺紋規格，例如 M6 或 1/4" style="margin-bottom:10px;">
+        <div id="tapList"></div>
+      </div>
+    </div>
+
+    <div class="sub-view" id="ref-tol" data-group="ref">
+      <div class="panel">
+        <div class="panel-title"><span class="pt">ISO 286 孔軸公差</span><span class="pt-side">適用 500 mm 以下</span></div>
+        <label for="tl_d" class="first">公稱尺寸 (mm)</label>
+        <input type="number" id="tl_d" placeholder="例如 25" inputmode="decimal">
+        <div class="row2">
+          <div><label for="tl_hole">孔公差</label><select id="tl_hole"></select></div>
+          <div><label for="tl_shaft">軸公差</label><select id="tl_shaft"></select></div>
+        </div>
+        <div class="quick-row" id="fitQuick">
+          <button data-h="H7" data-s="g6">H7/g6 滑動</button>
+          <button data-h="H7" data-s="h6">H7/h6 定位</button>
+          <button data-h="H7" data-s="k6">H7/k6 過渡</button>
+          <button data-h="H7" data-s="n6">H7/n6 輕壓</button>
+          <button data-h="H7" data-s="p6">H7/p6 壓入</button>
+        </div>
+        <div id="tolResult"></div>
+      </div>
     </div>
   </section>
 
-  <!-- ===================== 鑽攻對照表 頁 ===================== -->
-  <section id="view-tapchart" class="view">
-    <div class="panel">
-      <div class="panel-title">鑽孔攻牙底孔對照表</div>
-      <div class="hint" style="margin-bottom:10px;">以 75% 牙合率為基準，數值為業界公告參考值。實際下鑽建議選用比表列數值略大 0.05~0.1mm 的鑽頭，因鑽頭本身多會鑽出略大於標稱的孔徑。</div>
-      <div class="segmented" id="tapStdSeg" style="margin-bottom:10px;">
-        <button data-std="metric" class="active">公制 M系列</button>
-        <button data-std="unc">英制 UNC</button>
-        <button data-std="unf">英制 UNF</button>
+  <!-- ===================== 工具 ===================== -->
+  <section id="view-tool" class="view">
+    <div class="segmented two subseg mb" data-group="tool">
+      <button data-sub="tool-bolt" class="active">螺栓孔圓座標</button>
+      <button data-sub="tool-rough">粗糙度 / 殘留高度</button>
+    </div>
+
+    <div class="sub-view active" id="tool-bolt" data-group="tool">
+      <div class="panel">
+        <div class="panel-title"><span class="pt">螺栓孔圓 (PCD) 座標</span></div>
+        <div class="row2">
+          <div><label class="first" for="bc_pcd">PCD 直徑 (mm)</label><input type="number" id="bc_pcd" placeholder="例如 100" inputmode="decimal"></div>
+          <div><label class="first" for="bc_n">孔數</label><input type="number" id="bc_n" placeholder="例如 6" inputmode="numeric"></div>
+        </div>
+        <div class="row3">
+          <div><label for="bc_start">起始角度 °</label><input type="number" id="bc_start" value="0" inputmode="decimal"></div>
+          <div><label for="bc_cx">圓心 X</label><input type="number" id="bc_cx" value="0" inputmode="decimal"></div>
+          <div><label for="bc_cy">圓心 Y</label><input type="number" id="bc_cy" value="0" inputmode="decimal"></div>
+        </div>
+        <label>排列方向</label>
+        <div class="segmented two" id="bc_dir">
+          <button data-dir="ccw" class="active">逆時針 (CCW)</button>
+          <button data-dir="cw">順時針 (CW)</button>
+        </div>
+        <div class="hint">角度從 +X 軸 (3 點鐘方向) 起算。</div>
+        <div id="bcResult"></div>
       </div>
-      <input type="text" id="tapSearch" placeholder="搜尋螺紋規格,例如 M6 或 1/4" style="margin-bottom:10px;">
-      <div id="tapList"></div>
+    </div>
+
+    <div class="sub-view" id="tool-rough" data-group="tool">
+      <div class="panel">
+        <div class="panel-title"><span class="pt">刀鼻半徑 → 理論粗糙度</span></div>
+        <div class="row2">
+          <div><label class="first" for="rg_f">進給 f (mm/轉 或 mm/刃)</label><input type="number" id="rg_f" placeholder="例如 0.15" inputmode="decimal"></div>
+          <div><label class="first" for="rg_r">刀鼻半徑 r (mm)</label><input type="number" id="rg_r" placeholder="例如 0.8" inputmode="decimal"></div>
+        </div>
+        <label for="rg_target">目標 Ra (μm) <span style="color:var(--text-tertiary)">(選填，反推最大進給)</span></label>
+        <input type="number" id="rg_target" placeholder="例如 1.6" inputmode="decimal">
+        <div id="rgResult"></div>
+        <div class="hint">理論值：Rz = f²/(8r)、Ra ≈ f²/(32r)。實際粗糙度受震動、刀具磨耗、積屑影響，通常比理論值差。</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span class="pt">球刀步距 ↔ 殘留高度</span></div>
+        <div class="row2">
+          <div><label class="first" for="sc_d">球刀直徑 D (mm)</label><input type="number" id="sc_d" placeholder="例如 6" inputmode="decimal"></div>
+          <div><label class="first" for="sc_s">步距 (mm)</label><input type="number" id="sc_s" placeholder="例如 0.3" inputmode="decimal"></div>
+        </div>
+        <label for="sc_h">目標殘留高度 (μm) <span style="color:var(--text-tertiary)">(選填，反推步距)</span></label>
+        <input type="number" id="sc_h" placeholder="例如 3" inputmode="decimal">
+        <div id="scResult"></div>
+        <div class="hint">以平面計算；斜面、曲面的實際殘留高度會不同。</div>
+      </div>
     </div>
   </section>
 
@@ -403,37 +660,51 @@
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="8" y2="11"/><line x1="12" y1="11" x2="12" y2="11"/><line x1="16" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="15"/></svg>
     計算
   </button>
+  <button data-view="job">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="10" y1="2" x2="14" y2="2"/></svg>
+    工時成本
+  </button>
   <button data-view="lib">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
     刀具庫
   </button>
-  <button data-view="mat">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-    材質對照
+  <button data-view="ref">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    查表
   </button>
-  <button data-view="tapchart">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
-    鑽攻對照
+  <button data-view="tool">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="5.5" r="1.3"/><circle cx="17.6" cy="15.2" r="1.3"/><circle cx="6.4" cy="15.2" r="1.3"/></svg>
+    工具
   </button>
 </nav>
 
-<!-- Tool picker modal -->
+<!-- 選刀 -->
 <div class="modal-backdrop" id="pickModalBackdrop">
   <div class="modal">
-    <button class="modal-close" id="pickModalClose">✕</button>
+    <button class="modal-close" id="pickModalClose" aria-label="關閉">✕</button>
     <h2>選擇刀具</h2>
-    <input type="text" id="pickSearch" placeholder="搜尋刀具..." style="margin-bottom:12px;">
+    <input type="text" id="pickSearch" placeholder="搜尋刀具名稱、ERP、直徑..." style="margin-bottom:12px;">
     <div id="pickList"></div>
   </div>
 </div>
 
-<!-- Add/Edit tool modal -->
+<!-- 開啟工件 -->
+<div class="modal-backdrop" id="jobsModalBackdrop">
+  <div class="modal">
+    <button class="modal-close" id="jobsModalClose" aria-label="關閉">✕</button>
+    <h2>已存工件（全課共用）</h2>
+    <input type="text" id="jobsSearch" placeholder="搜尋工件名稱、料號..." style="margin-bottom:12px;">
+    <div id="jobsList"></div>
+  </div>
+</div>
+
+<!-- 新增/編輯刀具 -->
 <div class="modal-backdrop" id="toolModalBackdrop">
   <div class="modal">
-    <button class="modal-close" id="toolModalClose">✕</button>
+    <button class="modal-close" id="toolModalClose" aria-label="關閉">✕</button>
     <h2 id="toolModalTitle">新增刀具</h2>
 
-    <label>類別</label>
+    <label for="tf_category" class="first">類別</label>
     <select id="tf_category">
       <option value="endmill">端銑刀</option>
       <option value="facemill">面銑刀</option>
@@ -443,57 +714,44 @@
       <option value="tap">絲攻(攻牙)</option>
     </select>
 
-    <label>刀具名稱</label>
+    <label for="tf_name">刀具名稱</label>
     <input type="text" id="tf_name" placeholder="例如 Φ10 4刃平底立銑刀">
 
-    <label>ERP 刀具號碼 <span style="color:var(--text-tertiary)">(選填，共15碼英數字)</span></label>
+    <label for="tf_erp">ERP 刀具號碼 <span style="color:var(--text-tertiary)">(選填，共15碼英數字)</span></label>
     <input type="text" id="tf_erp" placeholder="例如 A1B2C3D4E5F6G7H" maxlength="15" style="text-transform:uppercase;">
-    <div class="hint" id="tf_erpHint">留空也可以建立；若要填寫，必須是15碼的英文字母或數字組合。</div>
+    <div class="hint" id="tf_erpHint"></div>
 
-    <label>廠牌 / 型號 <span style="color:var(--text-tertiary)">(選填)</span></label>
+    <label for="tf_brand">廠牌 / 型號 <span style="color:var(--text-tertiary)">(選填)</span></label>
     <input type="text" id="tf_brand" placeholder="例如 三菱 VF2SB">
 
     <div class="row2">
-      <div>
-        <label>直徑 D (mm)</label>
-        <input type="number" id="tf_d" inputmode="decimal">
-      </div>
-      <div id="tf_zWrap">
-        <label>刃數 Z</label>
-        <input type="number" id="tf_z" inputmode="numeric">
-      </div>
+      <div><label for="tf_d">直徑 D (mm)</label><input type="number" id="tf_d" inputmode="decimal"></div>
+      <div id="tf_zWrap"><label for="tf_z">刃數 Z</label><input type="number" id="tf_z" inputmode="numeric"></div>
     </div>
     <div id="tf_pitchWrap" style="display:none;">
-      <label>螺距 P (mm)</label>
-      <input type="number" id="tf_pitch" inputmode="decimal">
+      <label for="tf_pitch">螺距 P (mm)</label><input type="number" id="tf_pitch" inputmode="decimal">
     </div>
 
-    <label>適用材質</label>
+    <label for="tf_material">適用材質</label>
     <select id="tf_material"></select>
 
     <div class="row2">
-      <div>
-        <label>建議 Vc (m/min)</label>
-        <input type="number" id="tf_vc" inputmode="decimal">
-      </div>
-      <div>
-        <label id="tf_feedLabel">建議每刃進給 fz</label>
-        <input type="number" id="tf_feed" inputmode="decimal">
-      </div>
+      <div><label for="tf_vc">建議 Vc (m/min)</label><input type="number" id="tf_vc" inputmode="decimal"></div>
+      <div id="tf_feedWrap"><label for="tf_feed" id="tf_feedLabel">建議每刃進給 fz</label><input type="number" id="tf_feed" inputmode="decimal"></div>
     </div>
 
     <div class="row2" id="tf_apAeWrap">
-      <div>
-        <label>建議軸向切深 ap (mm)</label>
-        <input type="number" id="tf_ap" inputmode="decimal">
-      </div>
-      <div>
-        <label>建議徑向切深 ae (mm)</label>
-        <input type="number" id="tf_ae" inputmode="decimal">
-      </div>
+      <div><label for="tf_ap">建議軸向切深 ap (mm)</label><input type="number" id="tf_ap" inputmode="decimal"></div>
+      <div><label for="tf_ae">建議徑向切深 ae (mm)</label><input type="number" id="tf_ae" inputmode="decimal"></div>
     </div>
 
-    <label>備註 <span style="color:var(--text-tertiary)">(選填，例如現場使用心得)</span></label>
+    <div class="row2">
+      <div><label for="tf_price">單價 (元/支)</label><input type="number" id="tf_price" placeholder="選填" inputmode="decimal"></div>
+      <div><label for="tf_life">壽命 (可加工件數)</label><input type="number" id="tf_life" placeholder="選填" inputmode="numeric"></div>
+    </div>
+    <div class="hint">填了單價和壽命，工時成本頁就能自動算每件刀具成本。</div>
+
+    <label for="tf_note">備註 <span style="color:var(--text-tertiary)">(選填，例如現場使用心得)</span></label>
     <input type="text" id="tf_note" placeholder="例如 適合精加工，粗加工易崩刃">
 
     <div class="btn-row">
@@ -503,11 +761,13 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAction" style="display:none;"></button></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+         collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 /* ============ Firebase 初始化(部門共用資料庫) ============ */
 const firebaseConfig = {
@@ -520,494 +780,840 @@ const firebaseConfig = {
   measurementId: "G-YN70FLJ0G5"
 };
 const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
+let db;
+try{
+  db = initializeFirestore(fbApp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+}catch(e){
+  db = getFirestore(fbApp);
+}
 const toolsCollection = collection(db, 'tools');
+const jobsCollection = collection(db, 'jobs');
 
-/* ============ 存取密碼門檻 ============
-   注意:這只是簡單的畫面門檻,擋住不知道密碼的一般訪客/搜尋引擎,
-   不是真正的資料庫層級安全機制。真正的資料保護請搭配 Firestore 安全規則。
-   要更改密碼,直接改下面這行文字即可。 */
+/* ============ 存取密碼 ============
+   (A) TEAM_EMAIL 留空 → 畫面密碼 ACCESS_CODE(只擋一般訪客,看原始碼就看得到密碼)
+   (B) TEAM_EMAIL 填入 → 真正的 Firebase 帳號驗證:
+       1. Firebase 主控台 → Authentication → 啟用「電子郵件/密碼」
+       2. 新增使用者,例如 cnc-team@你的公司.com,密碼設成部門密碼
+       3. 把 email 填到下面 TEAM_EMAIL
+       4. 套用 firestore.rules */
+const TEAM_EMAIL = '';
 const ACCESS_CODE = 'cnc2026';
-(function initGate(){
-  const overlay = document.getElementById('gateOverlay');
-  const input = document.getElementById('gateInput');
-  const err = document.getElementById('gateError');
-  const btn = document.getElementById('gateSubmit');
-  if(localStorage.getItem('gate-unlocked') === '1'){
-    overlay.style.display = 'none';
-    return;
+
+/* ============ 小工具 ============ */
+function $(id){ return document.getElementById(id); }
+function num(id){ const v = parseFloat($(id).value); return isFinite(v) ? v : NaN; }
+const store = {
+  get(k, fallback=null){ try{ const v = localStorage.getItem(k); return v===null ? fallback : JSON.parse(v); }catch(e){ return fallback; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+};
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtNum(v, maxDec=0){ return Number(v).toLocaleString('zh-TW', {maximumFractionDigits:maxDec}); }
+function fmtMoney(v){ return '$' + (v >= 100 ? fmtNum(v,0) : fmtNum(v,2)); }
+function fmtTime(sec){
+  if(!(sec>0)) return '0 秒';
+  if(sec < 60) return `${+sec.toFixed(1)} 秒`;
+  if(sec < 3600){ let m = Math.floor(sec/60), s = Math.round(sec%60); if(s===60){m++; s=0;} return `${m} 分 ${String(s).padStart(2,'0')} 秒`; }
+  let h = Math.floor(sec/3600), m = Math.round((sec%3600)/60); if(m===60){h++; m=0;} return `${h} 小時 ${m} 分`;
+}
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* 數字跳動動畫 */
+function animateNum(el, value, unit, dec=0){
+  const prev = parseFloat(el.dataset.v);
+  el.dataset.v = value;
+  const render = v => { el.innerHTML = `${fmtNum(v, dec)} <span class="unit">${unit}</span>`; };
+  cancelAnimationFrame(el._raf);
+  if(!isFinite(prev) || reduceMotion || prev === value){ render(value); return; }
+  const t0 = performance.now(), dur = 280;
+  const step = now=>{
+    const k = Math.min(1, (now-t0)/dur), e = 1 - Math.pow(1-k, 3);
+    if(k < 1){ render(prev + (value-prev)*e); el._raf = requestAnimationFrame(step); }
+    else render(value);
+  };
+  el._raf = requestAnimationFrame(step);
+}
+function setDash(el, unit){ cancelAnimationFrame(el._raf); el.dataset.v = ''; el.innerHTML = `— <span class="unit">${unit}</span>`; }
+function toast(msg, actionLabel, actionFn){
+  const t = $('toast'), a = $('toastAction');
+  $('toastMsg').textContent = msg;
+  if(actionLabel){
+    a.textContent = actionLabel; a.style.display = '';
+    a.onclick = ()=>{ t.classList.remove('show'); actionFn(); };
+    t.classList.add('has-action');
+  } else {
+    a.style.display = 'none'; a.onclick = null; t.classList.remove('has-action');
   }
-  function tryUnlock(){
-    if(input.value === ACCESS_CODE){
-      localStorage.setItem('gate-unlocked', '1');
-      overlay.style.display = 'none';
+  t.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(()=>t.classList.remove('show'), actionLabel ? 6000 : 2200);
+}
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); toast('已複製'); }
+  catch(e){ toast('無法複製，請手動輸入'); }
+}
+
+/* ============ 存取門檻 ============ */
+let syncStarted = false;
+function unlockApp(){
+  $('gateOverlay').style.display = 'none';
+  if(!syncStarted){ syncStarted = true; startLibrarySync(); startJobsSync(); }
+}
+const auth = TEAM_EMAIL ? getAuth(fbApp) : null;
+function initGate(){
+  const input = $('gateInput'), err = $('gateError'), btn = $('gateSubmit');
+  if(auth){
+    onAuthStateChanged(auth, user=>{ if(user) unlockApp(); else $('gateOverlay').style.display = 'flex'; });
+  } else if(store.get('gate-unlocked') === 1 || localStorage.getItem('gate-unlocked') === '1'){
+    unlockApp();
+  }
+  async function tryUnlock(){
+    err.textContent = '';
+    if(auth){
+      btn.disabled = true; btn.textContent = '驗證中...';
+      try{ await signInWithEmailAndPassword(auth, TEAM_EMAIL, input.value); }
+      catch(e){ err.textContent = (e.code === 'auth/network-request-failed') ? '網路連線失敗，請稍後再試' : '密碼錯誤，請確認後再試一次'; }
+      finally{ btn.disabled = false; btn.textContent = '進入'; }
+    } else if(input.value === ACCESS_CODE){
+      store.set('gate-unlocked', 1); unlockApp();
     } else {
-      err.textContent = '密碼錯誤,請確認後再試一次';
+      err.textContent = '密碼錯誤，請確認後再試一次';
     }
   }
   btn.addEventListener('click', tryUnlock);
-  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryUnlock(); });
-})();
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+}
 
 /* ============ 材質資料 ============ */
 const MATERIALS = [
   {id:'carbon',   name:'碳鋼 / 合金鋼', desc:'一般結構鋼、中碳鋼，好加工的基準材質。',
-    vc:{mill:[80,150], drill:[60,100], tap:[8,15]},
-    tip:'最常見材質，數值可直接當起始參考。'},
+    vc:{mill:[80,150], drill:[60,100], tap:[8,15]}, feedK:1.0, tip:'最常見材質，數值可直接當起始參考。'},
   {id:'stainless',name:'不鏽鋼', desc:'黏刀、散熱差，容易讓刀刃積屑。',
-    vc:{mill:[60,100], drill:[40,70], tap:[5,10]},
-    tip:'轉速別貪快，寧可慢一點、進給穩一點，避免積屑瘤。'},
+    vc:{mill:[60,100], drill:[40,70], tap:[5,10]}, feedK:0.8, tip:'轉速別貪快，進給穩一點避免積屑瘤；進給也不要太小，會加工硬化。'},
   {id:'hardened', name:'工具鋼 / 硬化鋼', desc:'調質或熱處理後硬度較高(HRC45以上)。',
-    vc:{mill:[40,80], drill:[20,40], tap:[4,8]},
-    tip:'刀具磨耗快，建議縮短刀具壽命檢查週期。'},
+    vc:{mill:[40,80], drill:[20,40], tap:[4,8]}, feedK:0.6, tip:'刀具磨耗快，建議縮短刀具壽命檢查週期。'},
   {id:'aluminum', name:'鋁合金', desc:'好切削但容易黏刀、產生積屑瘤。',
-    vc:{mill:[200,500], drill:[80,150], tap:[15,30]},
-    tip:'轉速可以拉高，但要注意排屑與冷卻，避免鋁屑黏在刃口。'},
+    vc:{mill:[200,500], drill:[80,150], tap:[15,30]}, feedK:1.4, tip:'轉速可以拉高，注意排屑與冷卻；建議用 2～3 刃鋁用刀。'},
   {id:'titanium', name:'鈦合金', desc:'黏刀嚴重、散熱極差，加工難度高。',
-    vc:{mill:[30,60], drill:[15,30], tap:[3,6]},
-    tip:'務必降轉速、充分冷卻，避免刀尖因高溫快速磨耗。'},
+    vc:{mill:[30,60], drill:[15,30], tap:[3,6]}, feedK:0.7, tip:'務必降轉速、充分冷卻，避免刀尖因高溫快速磨耗。'},
   {id:'copper',   name:'銅 / 黃銅', desc:'軟、導熱好，但太黏刀具易讓表面粗糙。',
-    vc:{mill:[150,300], drill:[60,120], tap:[10,20]},
-    tip:'刀刃要保持鋒利，銳角容易讓工件表面拉毛。'},
+    vc:{mill:[150,300], drill:[60,120], tap:[10,20]}, feedK:1.2, tip:'刀刃要保持鋒利，鈍刀容易讓工件表面拉毛。'},
   {id:'plastic',  name:'塑膠 / 工程塑膠', desc:'切削阻力小，但怕高溫融化變形。',
-    vc:{mill:[300,600], drill:[100,200], tap:[15,30]},
-    tip:'轉速可以很高，但進給也要跟上，避免刀具在同一點摩擦生熱。'},
+    vc:{mill:[300,600], drill:[100,200], tap:[15,30]}, feedK:1.5, tip:'轉速可以很高，但進給也要跟上，避免同一點摩擦生熱。'},
 ];
-/* 取得某材質在目前加工型式下的Vc建議範圍(drill也用於絞刀) */
-function vcRangeFor(materialId, op){
+const HSS_FACTOR = 0.4;
+function matById(id){ return MATERIALS.find(m=>m.id===id) || MATERIALS[0]; }
+const OPNAME = {mill:'銑削', drill:'鑽孔', tap:'攻牙'};
+
+/* Vc 建議範圍(攻牙數值本來就是 HSS 絲攻,不再打折;絞刀約鑽孔的一半) */
+function vcRangeFor(materialId, op, toolMat='carbide', category=null){
   const m = matById(materialId);
   const key = (op==='mill') ? 'mill' : (op==='tap' ? 'tap' : 'drill');
-  return m.vc[key];
+  let r = m.vc[key];
+  if(toolMat === 'hss' && op !== 'tap') r = [Math.round(r[0]*HSS_FACTOR), Math.round(r[1]*HSS_FACTOR)];
+  if(op === 'drill' && category === 'reamer') r = [Math.round(r[0]*0.5), Math.round(r[1]*0.6)];
+  return r;
 }
+const mid = r => (r[0]+r[1])/2;
 
-/* ============ 鑽孔攻牙底孔對照表資料(75%牙合率,業界公告參考值) ============ */
-const TAP_METRIC = [
-  {size:'M1.6',   pitch:0.35, drill:1.25},
-  {size:'M2',     pitch:0.4,  drill:1.6},
-  {size:'M2.5',   pitch:0.45, drill:2.05},
-  {size:'M3',     pitch:0.5,  drill:2.5},
-  {size:'M3.5',   pitch:0.6,  drill:2.9},
-  {size:'M4',     pitch:0.7,  drill:3.3},
-  {size:'M5',     pitch:0.8,  drill:4.2},
-  {size:'M6',     pitch:1.0,  drill:5.0},
-  {size:'M7',     pitch:1.0,  drill:6.0},
-  {size:'M8',     pitch:1.25, drill:6.8},
-  {size:'M8',     pitch:1.0,  drill:7.0, fine:true},
-  {size:'M10',    pitch:1.5,  drill:8.5},
-  {size:'M10',    pitch:1.25, drill:8.8, fine:true},
-  {size:'M12',    pitch:1.75, drill:10.2},
-  {size:'M12',    pitch:1.5,  drill:10.5, fine:true},
-  {size:'M14',    pitch:2.0,  drill:12.0},
-  {size:'M14',    pitch:1.5,  drill:12.5, fine:true},
-  {size:'M16',    pitch:2.0,  drill:14.0},
-  {size:'M16',    pitch:1.5,  drill:14.5, fine:true},
-  {size:'M18',    pitch:2.5,  drill:15.5},
-  {size:'M18',    pitch:1.5,  drill:16.5, fine:true},
-  {size:'M20',    pitch:2.5,  drill:17.5},
-  {size:'M20',    pitch:1.5,  drill:18.5, fine:true},
-  {size:'M22',    pitch:2.5,  drill:19.5},
-  {size:'M22',    pitch:1.5,  drill:20.5, fine:true},
-  {size:'M24',    pitch:3.0,  drill:21.0},
-  {size:'M24',    pitch:2.0,  drill:22.0, fine:true},
-  {size:'M27',    pitch:3.0,  drill:24.0},
-  {size:'M30',    pitch:3.5,  drill:26.5},
-];
-const TAP_UNC = [
-  {size:'#1-64',   drill:'#53',  drillDec:0.0595},
-  {size:'#2-56',   drill:'#51',  drillDec:0.067},
-  {size:'#3-48',   drill:'5/64', drillDec:0.078},
-  {size:'#4-40',   drill:'#43',  drillDec:0.089},
-  {size:'#5-40',   drill:'#39',  drillDec:0.099},
-  {size:'#6-32',   drill:'#36',  drillDec:0.106},
-  {size:'#8-32',   drill:'#29',  drillDec:0.136},
-  {size:'#10-24',  drill:'#25',  drillDec:0.149},
-  {size:'#12-24',  drill:'#17',  drillDec:0.173},
-  {size:'1/4-20',  drill:'#7',   drillDec:0.201},
-  {size:'5/16-18', drill:'F',    drillDec:0.257},
-  {size:'3/8-16',  drill:'5/16', drillDec:0.3125},
-  {size:'7/16-14', drill:'U',    drillDec:0.368},
-  {size:'1/2-13',  drill:'27/64',drillDec:0.4219},
-  {size:'9/16-12', drill:'31/64',drillDec:0.4844},
-  {size:'5/8-11',  drill:'17/32',drillDec:0.5312},
-  {size:'3/4-10',  drill:'21/32',drillDec:0.6562},
-  {size:'7/8-9',   drill:'49/64',drillDec:0.7656},
-  {size:'1-8',     drill:'7/8',  drillDec:0.875},
-];
-const TAP_UNF = [
-  {size:'#1-72',   drill:'#53',  drillDec:0.0595},
-  {size:'#2-64',   drill:'#50',  drillDec:0.070},
-  {size:'#3-56',   drill:'#46',  drillDec:0.081},
-  {size:'#4-48',   drill:'#42',  drillDec:0.0935},
-  {size:'#5-44',   drill:'#37',  drillDec:0.104},
-  {size:'#6-40',   drill:'#33',  drillDec:0.113},
-  {size:'#8-36',   drill:'#29',  drillDec:0.136},
-  {size:'#10-32',  drill:'#21',  drillDec:0.159},
-  {size:'#12-28',  drill:'#15',  drillDec:0.180},
-  {size:'1/4-28',  drill:'#3',   drillDec:0.213},
-  {size:'5/16-24', drill:'I',    drillDec:0.272},
-  {size:'3/8-24',  drill:'Q',    drillDec:0.332},
-  {size:'7/16-20', drill:'W',    drillDec:0.386},
-  {size:'1/2-20',  drill:'29/64',drillDec:0.4531},
-  {size:'9/16-18', drill:'33/64',drillDec:0.5156},
-  {size:'5/8-18',  drill:'37/64',drillDec:0.5781},
-  {size:'3/4-16',  drill:'11/16',drillDec:0.6875},
-  {size:'7/8-14',  drill:'13/16',drillDec:0.8125},
-  {size:'1-12',    drill:'15/16',drillDec:0.9375},
-];
-let tapStd = 'metric';
-function renderTapList(searchTerm){
-  const term = (searchTerm||'').trim().toLowerCase();
-  const box = $('tapList');
-  let rows = '';
-  if(tapStd === 'metric'){
-    let list = TAP_METRIC;
-    if(term) list = list.filter(r=>r.size.toLowerCase().includes(term));
-    rows = list.map(r=>`
-      <div class="tool-card">
-        <div class="tool-card-top">
-          <div class="t-name">${r.size}${r.fine? ' <span style="color:var(--text-tertiary); font-size:12px;">(細牙)</span>' : ' <span style="color:var(--text-tertiary); font-size:12px;">(粗牙)</span>'} × ${r.pitch}</div>
-          <div class="t-name mono" style="color:var(--accent);">Ø${r.drill}mm</div>
-        </div>
-      </div>
-    `).join('');
-  } else {
-    let list = tapStd === 'unc' ? TAP_UNC : TAP_UNF;
-    if(term) list = list.filter(r=>r.size.toLowerCase().includes(term));
-    rows = list.map(r=>`
-      <div class="tool-card">
-        <div class="tool-card-top">
-          <div class="t-name">${r.size}</div>
-          <div class="t-name mono" style="color:var(--accent);">${r.drill} <span style="color:var(--text-tertiary); font-size:11px;">(${r.drillDec}")</span></div>
-        </div>
-      </div>
-    `).join('');
+/* 建議進給(依直徑內插 × 材質係數) */
+const FZ_ENDMILL = [[1,.005],[3,.015],[6,.03],[10,.045],[12,.05],[16,.06],[20,.07],[25,.08],[32,.09]];
+const F_DRILL    = [[1,.02],[3,.06],[5,.10],[8,.14],[10,.17],[12,.20],[16,.24],[20,.28],[25,.32]];
+function interp(table, x){
+  if(x <= table[0][0]) return table[0][1] * x / table[0][0];
+  for(let i=1;i<table.length;i++){
+    const [x1,y1] = table[i-1], [x2,y2] = table[i];
+    if(x <= x2) return y1 + (y2-y1)*(x-x1)/(x2-x1);
   }
-  box.innerHTML = rows || `<div class="empty-state">找不到符合「${searchTerm}」的規格</div>`;
+  return table[table.length-1][1];
 }
-$('tapStdSeg').addEventListener('click', (e)=>{
-  const btn = e.target.closest('button');
-  if(!btn) return;
-  document.querySelectorAll('#tapStdSeg button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  tapStd = btn.dataset.std;
-  $('tapSearch').value = '';
-  renderTapList('');
-});
-$('tapSearch').addEventListener('input', (e)=>renderTapList(e.target.value));
-
+function suggestFeed(op, D, materialId, toolMat='carbide', category=null){
+  if(op==='tap' || !(D>0)) return null;
+  let base;
+  if(op==='mill') base = (category==='facemill') ? 0.15 : interp(FZ_ENDMILL, D);
+  else base = interp(F_DRILL, D) * (category==='reamer' ? 2.5 : 1);
+  const v = base * matById(materialId).feedK * (toolMat==='hss' ? 0.8 : 1);
+  return [v*0.8, v*1.2];
+}
+function fmtF(v){ return v < 0.01 ? v.toFixed(4) : v.toFixed(3); }
 
 /* ============ 刀具分類 ============ */
 const CATEGORIES = [
-  {id:'endmill',  name:'端銑刀'},
-  {id:'facemill', name:'面銑刀'},
-  {id:'drill',    name:'鑽頭'},
-  {id:'reamer',   name:'絞刀'},
-  {id:'chamfer',  name:'倒角刀'},
-  {id:'tap',      name:'絲攻(攻牙)'},
+  {id:'endmill',name:'端銑刀'},{id:'facemill',name:'面銑刀'},{id:'drill',name:'鑽頭'},
+  {id:'reamer',name:'絞刀'},{id:'chamfer',name:'倒角刀'},{id:'tap',name:'絲攻(攻牙)'},
 ];
 function catOpType(catId){
   if(catId==='drill' || catId==='reamer') return 'drill';
   if(catId==='tap') return 'tap';
-  return 'mill'; // endmill, facemill, chamfer
+  return 'mill';
 }
-
-/* ============ 狀態 ============ */
-let state = {
-  op: 'mill', // mill | drill | tap
-  material: 'carbon',
-  toolLibrary: [],
-  pickedTool: null,
-};
-
-/* ============ 小工具 ============ */
-function $(id){ return document.getElementById(id); }
-function toast(msg){
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(()=>t.classList.remove('show'), 2200);
-}
-function matById(id){ return MATERIALS.find(m=>m.id===id) || MATERIALS[0]; }
 function catName(id){ const c = CATEGORIES.find(c=>c.id===id); return c ? c.name : id; }
 
-/* ============ 分頁切換 ============ */
-document.querySelectorAll('nav.tabbar button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    $('view-'+btn.dataset.view).classList.add('active');
+/* ============ 狀態 ============ */
+const state = {
+  op:'mill', material:'carbon', toolMat:'carbide',
+  toolLibrary:[], jobs:[], pickedTool:null,
+};
+const pickedCat = ()=> state.pickedTool ? state.pickedTool.category : null;
+const curRange = matId => vcRangeFor(matId, state.op, state.toolMat, pickedCat());
+
+/* ============ 分頁 ============ */
+const VIEW_TITLES = {calc:'Cutting', job:'Cycle & Cost', lib:'Tool Library', ref:'Reference', tool:'Utilities'};
+function switchView(view){
+  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+view));
+  $('viewTitle').textContent = VIEW_TITLES[view] || '';
+  window.scrollTo(0,0);
+  if(view === 'job') renderOps();
+}
+document.querySelectorAll('nav.tabbar button').forEach(btn=>btn.addEventListener('click', ()=>switchView(btn.dataset.view)));
+
+/* 子分頁(查表 / 工具) */
+document.querySelectorAll('.subseg').forEach(seg=>{
+  const group = seg.dataset.group;
+  const activate = sub=>{
+    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('active', x.dataset.sub===sub));
+    document.querySelectorAll(`.sub-view[data-group="${group}"]`).forEach(v=>v.classList.toggle('active', v.id===sub));
+  };
+  seg.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    activate(b.dataset.sub); store.set('sub-'+group, b.dataset.sub);
   });
+  const saved = store.get('sub-'+group);
+  if(saved && $(saved)) activate(saved);
 });
 
-/* ============ 加工型式切換 ============ */
-$('opTypeSeg').addEventListener('click', (e)=>{
-  const btn = e.target.closest('button');
-  if(!btn) return;
-  document.querySelectorAll('#opTypeSeg button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  state.op = btn.dataset.op;
+/* =====================================================================
+   計算頁
+   ===================================================================== */
+function setOp(op){
+  state.op = op;
+  document.querySelectorAll('#opTypeSeg button').forEach(b=>b.classList.toggle('active', b.dataset.op===op));
   updateOpUI();
   renderMatChips();
+}
+$('opTypeSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(!btn || btn.dataset.op === state.op) return;
+  clearPickedTool();
+  setOp(btn.dataset.op);
+  $('inFeed').value = '';
   applyMaterialDefault();
   calc();
 });
-
 function updateOpUI(){
-  const zWrap = $('zWrap'), pitchWrap = $('pitchWrap'), feedLabel = $('feedLabel'), feedHint = $('feedHint');
-  const apRow = $('apRow'), aeRow = $('aeRow');
-  if(state.op === 'mill'){
-    zWrap.style.display = '';
-    pitchWrap.style.display = 'none';
-    feedLabel.textContent = '每刃進給量 fz (mm/刃)';
-    feedHint.textContent = '轉速太快、進給太小 → 刀具摩擦生熱、容易燒刀；進給太大 → 容易崩刃或啃刀，建議先從中間值試切。';
-    apRow.style.display = ''; aeRow.style.display = '';
-  } else if(state.op === 'drill'){
-    zWrap.style.display = 'none';
-    pitchWrap.style.display = 'none';
-    feedLabel.textContent = '每轉進給量 f (mm/轉)';
-    feedHint.textContent = '鑽孔深度超過直徑3~5倍時，建議分段退屑排屑，避免鐵屑卡死鑽頭。';
-    apRow.style.display = ''; aeRow.style.display = 'none';
-    apRow.querySelector('.readout-label').textContent = '建議每次退屑深度';
-  } else if(state.op === 'tap'){
-    zWrap.style.display = 'none';
-    pitchWrap.style.display = '';
-    feedLabel.textContent = '';
-    $('feedFieldWrap').style.display = 'none';
-    feedHint.textContent = '攻牙進給是跟著螺距走的，轉速快慢主要影響效率與刀具壽命，太快容易爛牙或斷牙。';
-    apRow.style.display = 'none'; aeRow.style.display = 'none';
-    return;
-  }
-  $('feedFieldWrap').style.display = '';
+  const op = state.op;
+  $('zWrap').style.display = op==='mill' ? '' : 'none';
+  $('pitchWrap').style.display = op==='tap' ? '' : 'none';
+  $('feedFieldWrap').style.display = op==='tap' ? 'none' : '';
+  $('feedLabel').textContent = op==='mill' ? '每刃進給量 fz (mm/刃)' : '每轉進給量 f (mm/轉)';
+  $('dLabel').textContent = op==='tap' ? '螺紋公稱直徑 D (mm)' : '刀具直徑 D (mm)';
+  $('apRow').style.display = op==='tap' ? 'none' : '';
+  $('aeRow').style.display = op==='mill' ? '' : 'none';
+  $('apLabel').textContent = op==='mill' ? '建議軸向切深 ap' : '建議啄鑽深度 Q (G83)';
+  $('opHint').textContent = {
+    mill:'轉速太快、進給太小 → 刀具摩擦生熱、容易燒刀；進給太大 → 容易崩刃或啃刀，建議先從參考值中間開始試切。',
+    drill:'鑽孔深度超過直徑 3 倍時，建議用 G83 分段退屑，避免鐵屑卡死鑽頭。',
+    tap:'攻牙進給是跟著螺距走的，轉速快慢主要影響效率與刀具壽命，太快容易爛牙或斷牙。',
+  }[op];
 }
-
-/* ============ 材質 chips ============ */
+function syncToolMatSeg(){
+  document.querySelectorAll('#toolMatSeg button').forEach(b=>b.classList.toggle('active', b.dataset.tm===state.toolMat));
+}
+$('toolMatSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(!btn || btn.dataset.tm === state.toolMat) return;
+  state.toolMat = btn.dataset.tm;
+  syncToolMatSeg(); renderMatChips(); applyMaterialDefault(); calc();
+});
 function renderMatChips(){
   $('matChips').innerHTML = MATERIALS.map(m=>{
-    const range = vcRangeFor(m.id, state.op);
-    return `
-    <button class="chip ${m.id===state.material?'active':''}" data-mat="${m.id}">
-      <span class="name">${m.name}</span>
-      <span class="vc">Vc ${range[0]}–${range[1]} m/min</span>
-    </button>
-  `;}).join('');
+    const r = curRange(m.id);
+    return `<button class="chip ${m.id===state.material?'active':''}" data-mat="${m.id}">
+      <span class="name">${m.name}</span><span class="vc">Vc ${r[0]}–${r[1]} m/min</span></button>`;
+  }).join('');
 }
-$('matChips').addEventListener('click', (e)=>{
-  const chip = e.target.closest('.chip');
-  if(!chip) return;
+$('matChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
   state.material = chip.dataset.mat;
-  renderMatChips();
-  applyMaterialDefault();
-  calc();
+  renderMatChips(); applyMaterialDefault(); calc();
 });
-function applyMaterialDefault(){
-  const range = vcRangeFor(state.material, state.op);
-  $('inVc').value = Math.round((range[0]+range[1])/2);
-  $('vcRangeHint').textContent = `(建議 ${range[0]}–${range[1]})`;
+function updateVcHint(){ const r = curRange(state.material); $('vcRangeHint').textContent = `(建議 ${r[0]}–${r[1]})`; }
+function applyMaterialDefault(){ $('inVc').value = Math.round(mid(curRange(state.material))); updateVcHint(); }
+
+function updateFeedSuggestion(D){
+  const box = $('feedSuggest');
+  const s = suggestFeed(state.op, D, state.material, state.toolMat, pickedCat());
+  if(!s){ box.innerHTML = state.op==='tap' ? '' : '輸入直徑後會顯示建議進給量'; return; }
+  const unit = state.op==='mill' ? 'mm/刃' : 'mm/轉';
+  box.innerHTML = `參考值 <span class="mono">${fmtF(s[0])}–${fmtF(s[1])}</span> ${unit}<button class="link-btn" data-f="${fmtF(mid(s))}">帶入中間值</button>`;
 }
+$('feedSuggest').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-f]'); if(!b) return;
+  $('inFeed').value = b.dataset.f; calc();
+});
 
-/* ============ 計算邏輯 ============ */
+function resetOutputs(){
+  setDash($('outRpm'),'rpm'); setDash($('outFeed'),'mm/min');
+  $('outAp').textContent = '—'; $('outAe').textContent = '—';
+  $('adviceBox').innerHTML = ''; $('gcodeLine').style.display = 'none';
+}
+function adviceRow(ok, text){ return `<div class="advice ${ok?'':'warn'}"><b>${ok?'提醒':'注意'}：</b>${text}</div>`; }
+
 function calc(){
-  const D = parseFloat($('inD').value);
-  const Vc = parseFloat($('inVc').value);
-  const outRpm = $('outRpm'), outFeed = $('outFeed'), outAp = $('outAp'), outAe = $('outAe');
-  const adviceBox = $('adviceBox');
+  const D = num('inD'), Vc = num('inVc');
+  updateFeedSuggestion(D);
+  saveInputs();
+  if(!(D>0) || !(Vc>0)){ resetOutputs(); return; }
 
-  if(!D || D<=0 || !Vc || Vc<=0){
-    outRpm.textContent = '—'; outFeed.innerHTML = '— <span class="unit">mm/min</span>';
-    outAp.textContent = '—'; outAe.textContent = '—';
-    adviceBox.innerHTML = '';
-    return;
-  }
+  const theoRpm = (1000 * Vc) / (Math.PI * D);
+  const maxRpm = num('inMaxRpm');
+  const limited = maxRpm > 0 && theoRpm > maxRpm;
+  const S = Math.round(limited ? maxRpm : theoRpm);
+  animateNum($('outRpm'), S, 'rpm');
 
-  const rpm = (1000 * Vc) / (Math.PI * D);
-  outRpm.textContent = Math.round(rpm).toLocaleString();
-
-  let feedRate = null;
-  let adviceHtml = '';
-  let Z = null;
-  const m = matById(state.material);
+  let F = null, Fdec = 0, Z = null, advice = '';
+  const m = matById(state.material), tool = state.pickedTool;
 
   if(state.op === 'mill'){
-    Z = parseFloat($('inZ').value);
-    const fz = parseFloat($('inFeed').value);
-    if(Z>0 && fz>0){
-      feedRate = rpm * Z * fz;
-    }
-    const roughAp = (0.5*D).toFixed(1), roughApMax=(1*D).toFixed(1);
-    const roughAe = (0.1*D).toFixed(2), roughAeMax=(0.3*D).toFixed(2);
-    outAp.textContent = `${roughAp}~${roughApMax} mm`;
-    outAe.textContent = `${roughAe}~${roughAeMax} mm`;
-    adviceHtml = adviceRow(true, `粗加工參考：軸向切深約刀具直徑的 0.5～1 倍，徑向切深約 0.1～0.3 倍（側銑）。精加工請把切深降到 0.1～0.5mm，追求表面精度優先。`);
+    Z = num('inZ'); const fz = num('inFeed');
+    if(Z>0 && fz>0) F = Math.round(S * Z * fz);
+    const fAp = `${(0.5*D).toFixed(1)}~${(1*D).toFixed(1)} mm`, fAe = `${(0.1*D).toFixed(2)}~${(0.3*D).toFixed(2)} mm`;
+    $('outAp').textContent = (tool && tool.ap) ? `${tool.ap} mm (刀具庫)` : fAp;
+    $('outAe').textContent = (tool && tool.ae) ? `${tool.ae} mm (刀具庫)` : fAe;
+    advice += adviceRow(true, `粗加工參考：軸向切深約刀具直徑的 0.5～1 倍，徑向切深約 0.1～0.3 倍（側銑）。全刃寬開槽時軸向切深請減半。精加工請把切深降到 0.1～0.5mm。`);
   } else if(state.op === 'drill'){
-    const f = parseFloat($('inFeed').value);
-    if(f>0) feedRate = rpm * f;
-    outAp.textContent = `每次約 ${(2.5*D).toFixed(1)}~${(3*D).toFixed(1)} mm 退屑一次`;
-    outAe.textContent = '—';
-    adviceHtml = adviceRow(true, `孔深超過直徑 3～5 倍屬於深孔，建議分段鑽削並確實退屑，避免鐵屑纏繞卡死鑽頭導致斷刀。`);
-  } else if(state.op === 'tap'){
-    const P = parseFloat($('inPitch').value);
-    if(P>0) feedRate = rpm * P;
-    outAp.textContent = '—'; outAe.textContent = '—';
-    adviceHtml = adviceRow(true, `攻牙進給固定等於「轉速 × 螺距」，不能自己調整，否則會爛牙或斷牙。建議搭配浮動夾頭或使用剛性攻牙(同步攻牙)功能。`);
-  }
-
-  if(feedRate !== null){
-    outFeed.innerHTML = `${Math.round(feedRate).toLocaleString()} <span class="unit">mm/min</span>`;
+    const f = num('inFeed');
+    if(f>0) F = Math.round(S * f);
+    $('outAp').textContent = `每次 ${(0.5*D).toFixed(1)}~${(1*D).toFixed(1)} mm`;
+    advice += adviceRow(true, `孔深 3D 以內可一次鑽到底；超過 3D 建議用 G83 每次約 0.5～1 倍直徑退屑。有中心出水的碳化鎢鑽頭可以拉大啄鑽量。`);
+    if(tool && tool.category === 'reamer') advice += adviceRow(true, `絞刀：Vc 約為鑽孔的 1/2，進給約為鑽孔的 2～3 倍；預留量一般為直徑 1～3% (例如 Ø10 留 0.2mm)。`);
   } else {
-    outFeed.innerHTML = '— <span class="unit">mm/min</span>';
+    const P = num('inPitch');
+    if(P>0){ F = +(S * P).toFixed(3); Fdec = 3; }   // 攻牙 F 必須精準 = S × P
+    advice += adviceRow(true, `攻牙進給 = 轉速 × 螺距，必須精準等於這個值（不要四捨五入）。建議用剛性攻牙(M29 / G84)，或搭配浮動夾頭。`);
   }
 
-  // Vc range warning
-  const vcRange = vcRangeFor(state.material, state.op);
-  if(Vc < vcRange[0]*0.6 || Vc > vcRange[1]*1.4){
-    adviceHtml += adviceRow(false, `目前 Vc(${Vc} m/min) 明顯超出「${m.name}」在此加工型式下的建議範圍(${vcRange[0]}–${vcRange[1]})，請確認材質選擇或刀具是否適合，避免燒刀或崩刃。`);
+  if(F !== null){
+    animateNum($('outFeed'), F, 'mm/min', Fdec);
+    $('gcodeText').innerHTML = `<b>S${S}</b> &nbsp; <b>F${F}</b>`;
+    $('gcodeLine').style.display = '';
+  } else {
+    setDash($('outFeed'),'mm/min'); $('gcodeLine').style.display = 'none';
   }
 
-  // 依刀具直徑/刃數的提示
-  adviceHtml += geometryAdvice(state.op, D, Z);
-
-  adviceBox.innerHTML = adviceHtml;
+  if(limited){
+    advice += adviceRow(false, `理論轉速 ${fmtNum(theoRpm)} rpm 超過機台上限 ${fmtNum(maxRpm)}，已改用上限計算，實際 Vc 約 ${(Math.PI*D*S/1000).toFixed(0)} m/min；進給也已按實際轉速重新計算。`);
+  }
+  const r = curRange(state.material);
+  if(Vc < r[0]*0.6 || Vc > r[1]*1.4){
+    advice += adviceRow(false, `目前 Vc(${Vc} m/min) 明顯超出「${m.name}」在此加工型式下的建議範圍(${r[0]}–${r[1]})，請確認材質選擇或刀具是否適合。`);
+  }
+  if(state.op !== 'tap'){
+    const s = suggestFeed(state.op, D, state.material, state.toolMat, pickedCat()), f = num('inFeed');
+    if(s && f > 0 && (f > s[1]*1.8 || f < s[0]*0.4)){
+      advice += adviceRow(false, `目前進給 ${f} 跟參考值 ${fmtF(s[0])}–${fmtF(s[1])} 差很多，請再確認${f > s[1] ? '是否會崩刃或斷刀' : '是否會摩擦燒刀(進給太小反而傷刀)'}。`);
+    }
+  }
+  advice += geometryAdvice(state.op, D, Z);
+  $('adviceBox').innerHTML = advice;
 }
-function adviceRow(ok, text){
-  return `<div class="advice ${ok?'':'warn'}"><b>${ok?'提醒':'注意'}：</b>${text}</div>`;
-}
-
-/* 依刀具直徑/刃數給不同提示 */
 function geometryAdvice(op, D, Z){
   const rows = [];
   if(op === 'mill'){
-    if(D <= 3){
-      rows.push(adviceRow(false, `直徑只有 ${D}mm,屬於細刀,非常容易斷刀。建議刀具伸出長度盡量短、徑向切深(ae)降低,進給不要貪快,先用建議值下限試切。`));
-    } else if(D <= 6){
-      rows.push(adviceRow(true, `中小直徑刀具,切深建議偏保守(徑向ae抓低標即可),避免刀具偏擺讓尺寸跑掉。`));
-    } else if(D >= 20){
-      rows.push(adviceRow(true, `大直徑刀具切削力較大,請確認機台主軸功率、夾治具剛性足夠,避免震刀。`));
-    }
-    if(Z && Z >= 5 && D <= 8){
-      rows.push(adviceRow(false, `小直徑配上多刃(${Z}刃),容屑空間小,切屑容易卡在刃槽造成崩刃,建議降低每刃進給、加強排屑(空氣吹屑或切削液)。`));
-    }
+    if(D <= 3) rows.push(adviceRow(false, `直徑只有 ${D}mm，屬於細刀，非常容易斷刀。刀具伸出長度盡量短、徑向切深(ae)降低，進給先用參考值下限試切。`));
+    else if(D <= 6) rows.push(adviceRow(true, `中小直徑刀具，切深建議偏保守(徑向 ae 抓低標即可)，避免刀具偏擺讓尺寸跑掉。`));
+    else if(D >= 20) rows.push(adviceRow(true, `大直徑刀具切削力較大，請確認機台主軸功率、夾治具剛性足夠，避免震刀。`));
+    if(Z && Z >= 5 && D <= 8) rows.push(adviceRow(false, `小直徑配上多刃(${Z}刃)，容屑空間小，切屑容易卡在刃槽造成崩刃，建議降低每刃進給、加強排屑。`));
+    if(Z && Z >= 4 && state.material === 'aluminum') rows.push(adviceRow(false, `鋁合金用 ${Z} 刃刀容屑空間不足、容易黏刀，建議改用 2～3 刃鋁用刀。`));
   } else if(op === 'drill'){
-    if(D <= 2){
-      rows.push(adviceRow(false, `鑽頭直徑很小(${D}mm),剛性差、易斷,建議降低進給、確實分段退屑,並確認機台/夾頭精度足夠避免偏心折斷。`));
-    } else if(D >= 20){
-      rows.push(adviceRow(true, `大直徑鑽頭切削阻力大,請確認機台扭力足夠,起鑽時建議先降轉速對心。`));
-    }
-  } else if(op === 'tap'){
-    if(D <= 3){
-      rows.push(adviceRow(false, `小直徑絲攻(M3以下)非常容易斷在孔內,務必使用浮動夾頭或剛性攻牙,並確認底孔尺寸正確。`));
-    }
+    if(D <= 2) rows.push(adviceRow(false, `鑽頭直徑很小(${D}mm)，剛性差、易斷，建議降低進給、確實分段退屑，並確認夾頭精度足夠避免偏心折斷。`));
+    else if(D >= 20) rows.push(adviceRow(true, `大直徑鑽頭切削阻力大，請確認機台扭力足夠，起鑽時建議先降轉速對心。`));
+  } else if(op === 'tap' && D <= 3){
+    rows.push(adviceRow(false, `小直徑絲攻(M3以下)非常容易斷在孔內，務必使用浮動夾頭或剛性攻牙，並確認底孔尺寸正確。`));
   }
   return rows.join('');
 }
-
-['inD','inZ','inVc','inFeed','inPitch'].forEach(id=>{
-  $(id).addEventListener('input', calc);
-});
-
-/* ============ 從刀具庫選擇 → 帶入計算機 ============ */
-function applyToolToCalc(tool){
-  state.pickedTool = tool.id;
-  $('pickToolBtn').textContent = `${tool.name}${tool.brand? ' · '+tool.brand:''}`;
-  $('pickToolBtn').classList.add('filled');
-
-  // switch op type to match tool category
-  const op = catOpType(tool.category);
-  document.querySelectorAll('#opTypeSeg button').forEach(b=>b.classList.toggle('active', b.dataset.op===op));
-  state.op = op;
-  updateOpUI();
-
-  $('inD').value = tool.d || '';
-  if(tool.z) $('inZ').value = tool.z;
-  if(tool.pitch) $('inPitch').value = tool.pitch;
-
-  state.material = tool.material || state.material;
-  renderMatChips();
-  if(tool.vc) $('inVc').value = tool.vc; else applyMaterialDefault();
-  const r = vcRangeFor(state.material, state.op);
-  $('vcRangeHint').textContent = `(建議 ${r[0]}–${r[1]})`;
-  if(tool.feed && state.op !== 'tap') $('inFeed').value = tool.feed;
-
-  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.view==='calc'));
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  $('view-calc').classList.add('active');
-
+['inZ','inVc','inFeed','inPitch'].forEach(id=>$(id).addEventListener('input', calc));
+$('inD').addEventListener('input', ()=>{
+  if(state.pickedTool && num('inD') !== state.pickedTool.d) clearPickedTool();
   calc();
-  pushRecent(tool.id);
+});
+$('inMaxRpm').addEventListener('input', ()=>{
+  const v = num('inMaxRpm'); store.set('machine-max-rpm', v>0 ? v : null);
+  calc(); recalcJob();
+});
+$('copyGcode').addEventListener('click', ()=>copyText($('gcodeText').textContent.replace(/\s+/g,' ').trim()));
+
+function saveInputs(){
+  store.set('calc-inputs', {
+    op:state.op, material:state.material, toolMat:state.toolMat,
+    D:$('inD').value, Z:$('inZ').value, Vc:$('inVc').value, feed:$('inFeed').value, pitch:$('inPitch').value,
+  });
+}
+function restoreInputs(){
+  const s = store.get('calc-inputs'), maxRpm = store.get('machine-max-rpm');
+  if(maxRpm) $('inMaxRpm').value = maxRpm;
+  if(!s) return false;
+  if(['mill','drill','tap'].includes(s.op)) state.op = s.op;
+  if(MATERIALS.some(m=>m.id===s.material)) state.material = s.material;
+  if(s.toolMat === 'hss') state.toolMat = 'hss';
+  $('inD').value = s.D || ''; $('inZ').value = s.Z || ''; $('inVc').value = s.Vc || '';
+  $('inFeed').value = s.feed || ''; $('inPitch').value = s.pitch || '';
+  return !!s.Vc;
 }
 
-/* ============ 刀具庫：Firestore 共用資料庫(即時同步) ============ */
-function startLibrarySync(){
-  onSnapshot(toolsCollection, (snapshot)=>{
-    state.toolLibrary = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
-    $('toolLibLoading').style.display = 'none';
-    renderLibrary($('toolSearch') ? $('toolSearch').value : '');
-    if($('pickModalBackdrop').classList.contains('active')){
-      renderPickList($('pickSearch').value);
+/* 從刀具庫帶入計算 */
+function clearPickedTool(){
+  if(!state.pickedTool) return;
+  state.pickedTool = null;
+  $('pickToolText').textContent = '從刀具庫選擇刀具...';
+  $('pickToolBtn').classList.remove('filled');
+}
+function applyToolToCalc(tool){
+  setOp(catOpType(tool.category));
+  state.pickedTool = tool;
+  $('pickToolText').textContent = `${tool.name}${tool.brand ? ' · '+tool.brand : ''}`;
+  $('pickToolBtn').classList.add('filled');
+  $('inD').value = tool.d || ''; $('inZ').value = tool.z || ''; $('inPitch').value = tool.pitch || '';
+  if(tool.material) state.material = tool.material;
+  renderMatChips();
+  if(tool.vc) $('inVc').value = tool.vc; else applyMaterialDefault();
+  updateVcHint();
+  $('inFeed').value = (tool.feed && state.op !== 'tap') ? tool.feed : '';
+  switchView('calc'); calc(); pushRecent(tool.id);
+}
+function pushRecent(toolId){
+  const recent = store.get('recent-tools', []);
+  store.set('recent-tools', [toolId, ...recent.filter(id=>id!==toolId)].slice(0,8));
+}
+
+/* =====================================================================
+   工時成本
+   ===================================================================== */
+const CAP_DEFAULTS = {hours:10.5, eff:90, shifts:1};
+const JOB_DEFAULTS = {changeSec:8, loadSec:60};
+let job = null;
+let jobDirty = false;
+const uid = ()=> Math.random().toString(36).slice(2,9);
+
+function newJob(){
+  return { id:null, name:'', partNo:'', material:'carbon', qty:null,
+           changeSec:JOB_DEFAULTS.changeSec, loadSec:JOB_DEFAULTS.loadSec, ops:[] };
+}
+function newOp(){ return { uid:uid(), toolId:null, type:'mill', len:null, holes:null, depth:null, S:null, F:null, life:null, price:null, snap:null }; }
+function toolSnap(t){
+  if(!t) return null;
+  const { id, updatedAt, note, ...rest } = t;
+  return JSON.parse(JSON.stringify(rest));
+}
+function saveDraft(){ store.set('job-draft', {job, dirty:jobDirty}); }
+function markDirty(){ jobDirty = true; updateJobStatus(); saveDraft(); }
+function updateJobStatus(){
+  $('jobStatus').textContent = !job.id ? '尚未存檔' : (jobDirty ? '已修改，尚未儲存' : '已儲存到雲端');
+  $('jobStatus').style.color = (!job.id || jobDirty) ? 'var(--accent)' : 'var(--ok)';
+}
+function libTool(id){ return state.toolLibrary.find(t=>t.id===id); }
+
+/* 每道工序的自動參數與時間 */
+function opCalc(o){
+  const t = o.toolId ? (libTool(o.toolId) || o.snap) : null;
+  const type = t ? catOpType(t.category) : o.type;
+  const mat = (t && t.material) || job.material;
+  let autoS = null, autoF = null;
+  if(t && t.d > 0){
+    const vc = t.vc || mid(vcRangeFor(mat, type, 'carbide', t.category));
+    autoS = Math.round(1000*vc/(Math.PI*t.d));
+    const max = store.get('machine-max-rpm');
+    if(max > 0 && autoS > max) autoS = max;
+  }
+  const S = o.S > 0 ? o.S : autoS;
+  if(t && S > 0){
+    if(type === 'tap'){ if(t.pitch > 0) autoF = +(S*t.pitch).toFixed(3); }
+    else {
+      const sug = suggestFeed(type, t.d, mat, 'carbide', t.category);
+      const f = t.feed || (sug ? mid(sug) : null);
+      if(f){
+        if(type === 'mill'){ if(t.z > 0) autoF = Math.round(S*t.z*f); }
+        else autoF = Math.round(S*f);
+      }
     }
-  }, (err)=>{
+  }
+  const F = o.F > 0 ? o.F : autoF;
+  let min = null, missing = null;
+  if(!(F > 0)) missing = t ? '缺少進給 F（刀具庫沒有刃數/螺距），請手動填 F' : '請填寫 S 和 F';
+  else if(type === 'mill'){ if(o.len > 0) min = o.len / F; else missing = '請填總切削長度'; }
+  else {
+    if(o.holes > 0 && o.depth > 0) min = o.holes * (o.depth + 2) / F * (type === 'tap' ? 2 : 1);
+    else missing = '請填孔數與孔深';
+  }
+  const autoLife = t && t.lifePcs > 0 ? t.lifePcs : null;
+  const autoPrice = t && t.price > 0 ? t.price : null;
+  const life = o.life > 0 ? o.life : autoLife;
+  const price = o.price > 0 ? o.price : autoPrice;
+  const cost = (price > 0 && life > 0) ? price / life : null;
+  const name = t ? t.name : `手動工序(${OPNAME[type]})`;
+  return { t, type, autoS, autoF, S, F, min, missing, autoLife, autoPrice, life, price, cost, name };
+}
+
+function toolOptionsHtml(selectedId, snap){
+  let html = `<option value="">手動輸入(不從刀具庫選)</option>`;
+  CATEGORIES.forEach(c=>{
+    const tools = state.toolLibrary.filter(t=>t.category===c.id).sort(sortTools);
+    if(!tools.length) return;
+    html += `<optgroup label="${c.name}">` + tools.map(t=>
+      `<option value="${escapeHtml(t.id)}" ${t.id===selectedId?'selected':''}>${escapeHtml(t.name)}${t.erp?' · '+escapeHtml(t.erp):''}</option>`).join('') + `</optgroup>`;
+  });
+  if(selectedId && !libTool(selectedId)){
+    html += `<option value="${escapeHtml(selectedId)}" selected>${escapeHtml(snap ? snap.name : '未知刀具')} (已從刀具庫刪除)</option>`;
+  }
+  return html;
+}
+function opField(k, label, val){
+  return `<div><label>${label}</label><input type="number" inputmode="decimal" data-k="${k}" value="${val ?? ''}"></div>`;
+}
+function renderOps(){
+  if(!job) return;
+  const list = $('opsList');
+  if(!job.ops.length){
+    list.innerHTML = `<div class="empty-state" style="padding:18px;">還沒有工序，按下方「新增工序」開始</div>`;
+  } else {
+    list.innerHTML = job.ops.map((o,i)=>{
+      const c = opCalc(o);
+      const typeSeg = o.toolId ? '' :
+        `<div class="segmented mini op-type">${['mill','drill','tap'].map(t=>`<button data-type="${t}" class="${c.type===t?'active':''}">${OPNAME[t]}</button>`).join('')}</div>`;
+      const geo = c.type === 'mill' ? opField('len','總切削長度 mm', o.len)
+                                    : opField('holes','孔數', o.holes) + opField('depth','孔深 mm', o.depth);
+      return `<div class="op-card" data-uid="${o.uid}">
+        <div class="op-head">
+          <span class="op-no">${i+1}</span>
+          <select class="op-tool" aria-label="工序 ${i+1} 刀具">${toolOptionsHtml(o.toolId, o.snap)}</select>
+          <button class="op-btn" data-act="up" aria-label="上移" ${i===0?'disabled':''}>↑</button>
+          <button class="op-btn" data-act="down" aria-label="下移" ${i===job.ops.length-1?'disabled':''}>↓</button>
+          <button class="op-btn del" data-act="del" aria-label="刪除">✕</button>
+        </div>
+        ${typeSeg}
+        <div class="op-grid">
+          ${geo}
+          ${opField('S','轉速 S', o.S)}
+          ${opField('F','進給 F', o.F)}
+          ${opField('life','壽命(件)', o.life)}
+          ${opField('price','單價 元', o.price)}
+        </div>
+        <div class="op-result" data-res></div>
+      </div>`;
+    }).join('');
+  }
+  recalcJob();
+}
+
+function recalcJob(){
+  if(!job) return { cycle:0, toolCost:0 };
+  const results = job.ops.map(opCalc);
+
+  document.querySelectorAll('#opsList .op-card').forEach((card, i)=>{
+    const c = results[i]; if(!c) return;
+    const ph = {S:c.autoS, F:c.autoF, life:c.autoLife, price:c.autoPrice};
+    Object.entries(ph).forEach(([k,v])=>{
+      const inp = card.querySelector(`input[data-k="${k}"]`);
+      if(inp) inp.placeholder = v ? String(+(+v).toFixed(3)) : (k==='S'||k==='F' ? '必填' : '未設定');
+    });
+    const parts = [];
+    if(c.missing) parts.push(`<span class="err">${c.missing}</span>`);
+    else parts.push(`切削 <b>${fmtTime(c.min*60)}</b>`);
+    if(c.S && c.F) parts.push(`S${fmtNum(c.S)} F${fmtNum(c.F,3)}`);
+    parts.push(c.cost !== null ? `刀具成本 <b>${fmtMoney(c.cost)}</b>/件` : `<span style="color:var(--text-tertiary)">未設定單價或壽命</span>`);
+    card.querySelector('[data-res]').innerHTML = parts.join(' · ');
+  });
+
+  const cutSec = results.reduce((s,c)=>s + (c.min ? c.min*60 : 0), 0);
+  const changeSec = job.ops.length * (job.changeSec || 0);
+  const loadSec = job.loadSec || 0;
+  const cycle = cutSec + changeSec + loadSec;
+  const toolCost = results.reduce((s,c)=>s + (c.cost || 0), 0);
+  const anyMissing = results.some(c=>c.missing);
+
+  $('jobCycle').innerHTML = cycle > 0 ? fmtTime(cycle).replace(/ (秒|分|小時)/g,'<span class="unit">$1</span>') : '—';
+  $('jobToolCost').innerHTML = results.some(c=>c.cost!==null) ? `${fmtMoney(toolCost)} <span class="unit">/件</span>` : '—';
+
+  const tot = cycle || 1;
+  const segs = $('timeBar').children;
+  segs[0].style.width = (cutSec/tot*100)+'%';
+  segs[1].style.width = (changeSec/tot*100)+'%';
+  segs[2].style.width = (loadSec/tot*100)+'%';
+  $('timeLegend').innerHTML =
+    `<span><i style="background:var(--accent)"></i>切削 ${fmtTime(cutSec)}</span>` +
+    `<span><i style="background:var(--info)"></i>換刀 ${job.ops.length} 次 ${fmtTime(changeSec)}</span>` +
+    `<span><i style="background:var(--ok)"></i>上下料 ${fmtTime(loadSec)}</span>` +
+    (anyMissing ? `<span style="color:var(--warn)">⚠ 有工序資料不完整，切削時間未計入</span>` : '');
+
+  renderCapacity(cycle);
+  renderToolNeeds(results);
+  return { cycle, toolCost };
+}
+
+function capSettings(){
+  const s = store.get('cap-settings') || {};
+  const ok = v => typeof v === 'number' && v > 0;
+  return { hours: ok(s.hours) ? s.hours : CAP_DEFAULTS.hours, eff: ok(s.eff) ? s.eff : CAP_DEFAULTS.eff, shifts: ok(s.shifts) ? s.shifts : CAP_DEFAULTS.shifts };
+}
+function renderCapacity(cycle){
+  const box = $('capBox');
+  const h = num('cp_hours'), eff = num('cp_eff'), shifts = num('cp_shifts') || 1;
+  if(!(cycle > 0) || !(h > 0) || !(eff > 0)){
+    box.innerHTML = `<div class="hint" style="margin:0;">加入工序並填好資料後，這裡會顯示每班/每天產能與交期。</div>`;
+    return;
+  }
+  const avail = h * 3600 * eff / 100;
+  const perShift = Math.floor(avail / cycle);
+  const perDay = perShift * shifts;
+  const qty = job.qty;
+  let html = `
+    <div class="result-line"><span class="k">每小時(含稼動率)</span><span class="v">${fmtNum(3600*eff/100/cycle,1)} 件</span></div>
+    <div class="result-line"><span class="k">每班可做 (${h} 小時 × ${eff}%)</span><span class="v">${fmtNum(perShift)} 件</span></div>
+    <div class="result-line"><span class="k">每天可做 (${shifts} 班)</span><span class="v">${fmtNum(perDay)} 件</span></div>`;
+  if(qty > 0){
+    const machineH = qty * cycle / 3600;
+    const days = perDay > 0 ? Math.ceil(qty / perDay) : null;
+    html += `<div class="divider"></div>
+      <div class="result-line"><span class="k">${fmtNum(qty)} 件純加工時間</span><span class="v">${fmtNum(machineH,1)} 小時</span></div>
+      <div class="result-line"><span class="k">含稼動率實際需要</span><span class="v">${fmtNum(machineH/(eff/100),1)} 小時</span></div>
+      <div class="result-line"><span class="k">需要天數 (1 台機)</span><span class="v">${days ? days + ' 天' : '—'}</span></div>`;
+  } else {
+    html += `<div class="hint">填上「需求件數」可以算出需要幾天完成。</div>`;
+  }
+  if(perShift === 0) html += `<div class="advice warn"><b>注意：</b>單件工時超過一個班的可用時間。</div>`;
+  box.innerHTML = html;
+}
+
+function renderToolNeeds(results){
+  const box = $('toolNeedBox');
+  const qty = job.qty;
+  $('toolNeedQty').textContent = qty > 0 ? `以 ${fmtNum(qty)} 件計算` : '填需求件數可算備刀數';
+  if(!results.length){ box.innerHTML = `<div class="hint" style="margin:0;">加入工序後顯示。</div>`; return; }
+  // 同一支刀出現在多道工序時合併
+  const map = new Map();
+  results.forEach((c, i)=>{
+    const key = job.ops[i].toolId || ('manual_'+i);
+    const cur = map.get(key) || { name:c.name, perPc:0, wear:0, unknown:false };
+    if(c.cost !== null){ cur.perPc += c.cost; cur.wear += 1 / c.life; } else cur.unknown = true;
+    map.set(key, cur);
+  });
+  const rows = [...map.values()];
+  const total = rows.reduce((s,r)=>s + r.perPc, 0);
+  box.innerHTML = `<table class="data">
+    <tr><th>刀具</th><th class="num">每件成本</th>${qty>0?'<th class="num">需備刀</th><th class="num">刀具費用</th>':''}</tr>
+    ${rows.map(r=>`<tr>
+      <td>${escapeHtml(r.name)}</td>
+      <td class="num">${r.unknown && !r.perPc ? '<span style="color:var(--text-tertiary)">未設定</span>' : fmtMoney(r.perPc)}</td>
+      ${qty>0 ? `<td class="num">${r.wear ? `${Math.ceil(qty*r.wear - 1e-9)} 支 <span class="tag">(${fmtNum(qty*r.wear,1)})</span>` : '—'}</td>
+                 <td class="num">${r.perPc ? fmtMoney(r.perPc*qty) : '—'}</td>` : ''}
+    </tr>`).join('')}
+    <tr><td><b>合計</b></td><td class="num"><b>${fmtMoney(total)}</b></td>${qty>0?`<td></td><td class="num"><b>${fmtMoney(total*qty)}</b></td>`:''}</tr>
+  </table>
+  <div class="hint">每件刀具成本 = 單價 ÷ 壽命件數。需備刀數為無條件進位，括號內為實際消耗量。</div>`;
+}
+
+/* 工件欄位 */
+function fillJobForm(){
+  $('jb_name').value = job.name || ''; $('jb_part').value = job.partNo || '';
+  $('jb_material').value = job.material || 'carbon';
+  $('jb_qty').value = job.qty ?? ''; $('jb_change').value = job.changeSec ?? ''; $('jb_load').value = job.loadSec ?? '';
+  updateJobStatus();
+}
+$('jb_material').innerHTML = MATERIALS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+[['jb_name','name','s'],['jb_part','partNo','s'],['jb_material','material','s'],['jb_qty','qty','n'],['jb_change','changeSec','n'],['jb_load','loadSec','n']]
+.forEach(([id,key,kind])=>{
+  $(id).addEventListener(id==='jb_material' ? 'change' : 'input', ()=>{
+    const v = $(id).value;
+    job[key] = kind==='s' ? v.trim() : (v==='' ? null : parseFloat(v));
+    markDirty();
+    if(id==='jb_material') renderOps(); else recalcJob();
+  });
+});
+['cp_hours','cp_eff','cp_shifts'].forEach(id=>$(id).addEventListener('input', ()=>{
+  store.set('cap-settings', { hours:num('cp_hours'), eff:num('cp_eff'), shifts:num('cp_shifts') });
+  recalcJob();
+}));
+
+/* 工序操作 */
+$('addOpBtn').addEventListener('click', ()=>{
+  job.ops.push(newOp()); markDirty(); renderOps();
+  const cards = document.querySelectorAll('#opsList .op-card');
+  const last = cards[cards.length-1];
+  if(last){ last.scrollIntoView({behavior: reduceMotion ? 'auto' : 'smooth', block:'center'}); }
+});
+$('opsList').addEventListener('input', e=>{
+  const inp = e.target.closest('input[data-k]'); if(!inp) return;
+  const o = job.ops.find(x=>x.uid===inp.closest('.op-card').dataset.uid); if(!o) return;
+  o[inp.dataset.k] = inp.value==='' ? null : parseFloat(inp.value);
+  markDirty(); recalcJob();
+});
+$('opsList').addEventListener('change', e=>{
+  const sel = e.target.closest('select.op-tool'); if(!sel) return;
+  const o = job.ops.find(x=>x.uid===sel.closest('.op-card').dataset.uid); if(!o) return;
+  o.toolId = sel.value || null;
+  const t = o.toolId ? libTool(o.toolId) : null;
+  o.snap = toolSnap(t);
+  if(t) o.type = catOpType(t.category);
+  o.S = null; o.F = null;
+  markDirty(); renderOps();
+});
+$('opsList').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const card = b.closest('.op-card'); if(!card) return;
+  const idx = job.ops.findIndex(x=>x.uid===card.dataset.uid); if(idx<0) return;
+  if(b.dataset.type){ job.ops[idx].type = b.dataset.type; markDirty(); renderOps(); return; }
+  const act = b.dataset.act;
+  if(act==='del'){
+    const removed = job.ops.splice(idx,1)[0];
+    markDirty(); renderOps();
+    toast(`已刪除工序 ${idx+1}`, '復原', ()=>{ job.ops.splice(idx,0,removed); markDirty(); renderOps(); });
+  } else if(act==='up' && idx>0){
+    [job.ops[idx-1], job.ops[idx]] = [job.ops[idx], job.ops[idx-1]]; markDirty(); renderOps();
+  } else if(act==='down' && idx<job.ops.length-1){
+    [job.ops[idx+1], job.ops[idx]] = [job.ops[idx], job.ops[idx+1]]; markDirty(); renderOps();
+  }
+});
+
+/* 工件存檔 / 開啟 */
+$('jobNewBtn').addEventListener('click', ()=>{
+  if(jobDirty && job.ops.length && !confirm('目前的工件還沒儲存，確定要開新工件嗎？')) return;
+  job = newJob(); jobDirty = false; saveDraft(); fillJobForm(); renderOps();
+});
+$('jobSaveBtn').addEventListener('click', ()=>{
+  if(!job.name){ toast('請先填寫工件名稱'); $('jb_name').focus(); return; }
+  if(!job.ops.length){ toast('請至少新增一道工序'); return; }
+  const summary = recalcJob();
+  if(!job.id) job.id = 'j_' + Date.now() + '_' + uid();
+  // 存檔時刷新刀具快照,刀具被刪掉後仍能計算
+  job.ops.forEach(o=>{ const t = o.toolId && libTool(o.toolId); if(t) o.snap = toolSnap(t); });
+  const { id, ...data } = job;
+  const payload = JSON.parse(JSON.stringify({ ...data, cycleSec:+summary.cycle.toFixed(1), toolCostPerPc:+summary.toolCost.toFixed(2), updatedAt:Date.now() }));
+  setDoc(doc(jobsCollection, id), payload).catch(e=>{
+    console.error(e);
+    jobDirty = true; saveDraft(); updateJobStatus();
+    toast(e.code==='permission-denied' ? '沒有寫入權限：請到 Firebase 規則開放 jobs 資料表' : '儲存失敗，請稍後再試');
+  });
+  jobDirty = false; saveDraft(); updateJobStatus();
+  toast('已儲存到雲端');
+});
+$('jobOpenBtn').addEventListener('click', ()=>{
+  $('jobsSearch').value = ''; renderJobsList('');
+  $('jobsModalBackdrop').classList.add('active');
+});
+$('jobsModalClose').addEventListener('click', ()=>$('jobsModalBackdrop').classList.remove('active'));
+$('jobsModalBackdrop').addEventListener('click', e=>{ if(e.target===$('jobsModalBackdrop')) $('jobsModalBackdrop').classList.remove('active'); });
+$('jobsSearch').addEventListener('input', e=>renderJobsList(e.target.value));
+let jobsError = '';
+function renderJobsList(term){
+  if(jobsError){ $('jobsList').innerHTML = `<div class="empty-state">${jobsError}</div>`; return; }
+  term = (term||'').trim().toLowerCase();
+  let jobs = [...state.jobs].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(term) jobs = jobs.filter(j=>(j.name||'').toLowerCase().includes(term) || (j.partNo||'').toLowerCase().includes(term));
+  $('jobsList').innerHTML = jobs.length ? jobs.map(j=>`
+    <div class="tool-card" data-id="${escapeHtml(j.id)}">
+      <div class="tool-card-top">
+        <div><div class="t-name">${escapeHtml(j.name)}</div>${j.partNo?`<div class="t-brand mono">${escapeHtml(j.partNo)}</div>`:''}</div>
+        <div class="t-name mono" style="color:var(--accent); font-size:13px; text-align:right;">${j.cycleSec ? fmtTime(j.cycleSec) : ''}</div>
+      </div>
+      <div class="t-specs">
+        <span class="badge">${(j.ops||[]).length} 道工序</span><span class="badge">${matById(j.material).name}</span>
+        ${j.toolCostPerPc ? `<span class="badge money">刀具 ${fmtMoney(j.toolCostPerPc)}/件</span>` : ''}
+      </div>
+      ${j.updatedAt ? `<div class="t-specs" style="color:var(--text-tertiary);">最後更新：${new Date(j.updatedAt).toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+      <div class="t-actions">
+        <button class="use" data-jact="open">開啟</button>
+        <button data-jact="copy">複製成新工件</button>
+        <button class="del" data-jact="del">刪除</button>
+      </div>
+    </div>`).join('')
+    : `<div class="empty-state">${state.jobs.length ? '找不到符合的工件' : '還沒有已存的工件'}</div>`;
+}
+$('jobsList').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-jact]'); if(!b) return;
+  const j = state.jobs.find(x=>x.id===b.closest('.tool-card').dataset.id); if(!j) return;
+  const act = b.dataset.jact;
+  if(act==='del'){
+    if(!confirm(`確定要刪除工件「${j.name}」嗎？全課共用資料會一起刪除。`)) return;
+    const backup = { ...j };
+    deleteDoc(doc(jobsCollection, j.id)).catch(()=>toast('刪除失敗，請稍後再試'));
+    if(job.id === j.id){ job.id = null; jobDirty = true; saveDraft(); updateJobStatus(); }
+    toast(`已刪除「${j.name}」`, '復原', ()=>{ const { id, ...data } = backup; setDoc(doc(jobsCollection, id), data); toast('已復原'); });
+    return;
+  }
+  if(jobDirty && job.ops.length && !confirm('目前的工件還沒儲存，確定要開啟其他工件嗎？')) return;
+  const { cycleSec, toolCostPerPc, updatedAt, ...data } = JSON.parse(JSON.stringify(j));
+  job = Object.assign(newJob(), data);
+  job.ops = (job.ops||[]).map(o=>Object.assign(newOp(), o, {uid:uid()}));
+  if(act==='copy'){ job.id = null; job.name = job.name + ' (複本)'; jobDirty = true; }
+  else jobDirty = false;
+  saveDraft(); fillJobForm(); renderOps();
+  $('jobsModalBackdrop').classList.remove('active');
+  toast(act==='copy' ? '已複製，記得改名後儲存' : `已開啟「${j.name}」`);
+});
+function startJobsSync(){
+  onSnapshot(jobsCollection, snap=>{
+    jobsError = '';
+    state.jobs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    if($('jobsModalBackdrop').classList.contains('active')) renderJobsList($('jobsSearch').value);
+  }, err=>{
     console.error(err);
-    $('toolLibLoading').textContent = '無法連線到共用刀具庫，請檢查網路連線或稍後再試';
-    $('toolLibLoading').style.display = '';
+    jobsError = err.code === 'permission-denied' ? '沒有讀取工件資料的權限。<br>請到 Firebase 規則開放 jobs 資料表。' : '無法連線到雲端，請稍後再試。';
+    if($('jobsModalBackdrop').classList.contains('active')) renderJobsList('');
   });
 }
 
-async function saveToolToCloud(tool){
-  try{
-    const { id, ...data } = tool;
-    await setDoc(doc(toolsCollection, id), data);
-    return true;
-  }catch(e){
+/* =====================================================================
+   刀具庫
+   ===================================================================== */
+function startLibrarySync(){
+  onSnapshot(toolsCollection, { includeMetadataChanges:true }, snapshot=>{
+    state.toolLibrary = snapshot.docs.map(d=>({ id:d.id, ...d.data() }));
+    $('toolLibLoading').style.display = 'none';
+    const st = $('syncStatus');
+    if(snapshot.metadata.fromCache){ st.textContent = '⚠ 目前顯示本機快取資料(離線或連線中)，修改會在連線後自動上傳'; st.className = 'sync-status offline'; }
+    else if(snapshot.metadata.hasPendingWrites){ st.textContent = '同步中...'; st.className = 'sync-status offline'; }
+    else { st.textContent = `● 已與雲端同步，共 ${state.toolLibrary.length} 支刀具`; st.className = 'sync-status'; }
+    renderLibrary($('toolSearch').value);
+    if($('pickModalBackdrop').classList.contains('active')) renderPickList($('pickSearch').value);
+    // 工時頁:沒在輸入時才整個重繪,避免打字中斷
+    if($('view-job').classList.contains('active') && !$('opsList').contains(document.activeElement)) renderOps();
+    else recalcJob();
+  }, err=>{
+    console.error(err);
+    $('toolLibLoading').textContent = err.code === 'permission-denied' ? '沒有權限讀取刀具庫，請重新登入' : '無法連線到共用刀具庫，請檢查網路連線或稍後再試';
+    $('toolLibLoading').style.display = '';
+  });
+}
+function saveToolToCloud(tool){
+  const { id, ...data } = tool;
+  return setDoc(doc(toolsCollection, id), data).catch(e=>{
     console.error(e);
-    toast('儲存失敗，請檢查網路連線後再試一次');
-    return false;
-  }
+    toast(e.code === 'permission-denied' ? '沒有寫入權限，請重新登入' : '儲存失敗，請稍後再試一次');
+  });
 }
-
-async function deleteToolFromCloud(id){
-  try{
-    await deleteDoc(doc(toolsCollection, id));
-    return true;
-  }catch(e){
-    console.error(e);
-    toast('刪除失敗，請檢查網路連線後再試一次');
-    return false;
-  }
+function matchesTerm(t, term){
+  return ['name','brand','erp','note'].some(k=>(t[k]||'').toLowerCase().includes(term)) || String(t.d||'').includes(term);
 }
+function sortTools(a,b){ return (a.d||0)-(b.d||0) || String(a.name).localeCompare(String(b.name),'zh-Hant'); }
 
-function pushRecent(toolId){
-  try{
-    let recent = JSON.parse(localStorage.getItem('recent-tools') || '[]');
-    recent = [toolId, ...recent.filter(id=>id!==toolId)].slice(0,8);
-    localStorage.setItem('recent-tools', JSON.stringify(recent));
-  }catch(e){ /* silent */ }
-}
-
+const collapsedCats = new Set();
 function renderLibrary(searchTerm){
   const term = (searchTerm||'').trim().toLowerCase();
   const container = $('toolCategories');
   container.innerHTML = '';
-
-  if(state.toolLibrary.length === 0){
+  if(!state.toolLibrary.length){
     container.innerHTML = `<div class="empty-state">刀具庫目前是空的<br>按右上角「＋」新增第一支常用刀具吧</div>`;
     return;
   }
-
   CATEGORIES.forEach(cat=>{
     let tools = state.toolLibrary.filter(t=>t.category===cat.id);
-    if(term){
-      tools = tools.filter(t=>
-        (t.name||'').toLowerCase().includes(term) ||
-        (t.brand||'').toLowerCase().includes(term) ||
-        (t.erp||'').toLowerCase().includes(term) ||
-        String(t.d||'').includes(term)
-      );
-    }
-    if(tools.length === 0) return;
-
+    if(term) tools = tools.filter(t=>matchesTerm(t, term));
+    if(!tools.length) return;
+    tools.sort(sortTools);
     const catDiv = document.createElement('div');
-    catDiv.className = 'cat open';
+    catDiv.className = 'cat' + ((collapsedCats.has(cat.id) && !term) ? '' : ' open');
     catDiv.innerHTML = `
       <div class="cat-header">
         <h3>${cat.name}</h3>
@@ -1016,245 +1622,513 @@ function renderLibrary(searchTerm){
           <svg class="cat-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
         </div>
       </div>
-      <div class="cat-body">${tools.map(t=>toolCardHtml(t)).join('')}</div>
-    `;
-    catDiv.querySelector('.cat-header').addEventListener('click', ()=>catDiv.classList.toggle('open'));
+      <div class="cat-body">${tools.map(toolCardHtml).join('')}</div>`;
+    catDiv.querySelector('.cat-header').addEventListener('click', ()=>{
+      catDiv.classList.toggle('open');
+      if(catDiv.classList.contains('open')) collapsedCats.delete(cat.id); else collapsedCats.add(cat.id);
+    });
     container.appendChild(catDiv);
   });
-
-  if(container.innerHTML === ''){
-    container.innerHTML = `<div class="empty-state">找不到符合「${searchTerm}」的刀具</div>`;
-  }
+  if(container.innerHTML === '') container.innerHTML = `<div class="empty-state">找不到符合「${escapeHtml(searchTerm)}」的刀具</div>`;
 }
-
 function toolCardHtml(t){
-  const m = matById(t.material);
-  const specs = [];
-  specs.push(`Φ${t.d}mm`);
-  if(t.z) specs.push(`${t.z}刃`);
-  if(t.pitch) specs.push(`螺距${t.pitch}`);
-  specs.push(m ? m.name : '');
-  if(t.vc) specs.push(`Vc ${t.vc}`);
-  if(t.feed) specs.push(`fz/f ${t.feed}`);
-  if(t.ap) specs.push(`ap ${t.ap}mm`);
-  if(t.ae) specs.push(`ae ${t.ae}mm`);
+  const specs = [`Φ${escapeHtml(t.d)}mm`];
+  if(t.z) specs.push(`${escapeHtml(t.z)}刃`);
+  if(t.pitch) specs.push(`螺距${escapeHtml(t.pitch)}`);
+  specs.push(matById(t.material).name);
+  if(t.vc) specs.push(`Vc ${escapeHtml(t.vc)}`);
+  if(t.feed) specs.push(`${catOpType(t.category)==='mill'?'fz':'f'} ${escapeHtml(t.feed)}`);
+  if(t.ap) specs.push(`ap ${escapeHtml(t.ap)}mm`);
+  if(t.ae) specs.push(`ae ${escapeHtml(t.ae)}mm`);
+  const money = [];
+  if(t.price > 0) money.push(`<span class="badge money">${fmtMoney(t.price)}/支</span>`);
+  if(t.lifePcs > 0) money.push(`<span class="badge">壽命 ${fmtNum(t.lifePcs)} 件</span>`);
+  if(t.price > 0 && t.lifePcs > 0) money.push(`<span class="badge money">${fmtMoney(t.price/t.lifePcs)}/件</span>`);
   return `
-    <div class="tool-card" data-id="${t.id}">
+    <div class="tool-card" data-id="${escapeHtml(t.id)}">
       <div class="tool-card-top">
-        <div>
-          <div class="t-name">${escapeHtml(t.name)}</div>
-          ${t.brand? `<div class="t-brand">${escapeHtml(t.brand)}</div>`:''}
-        </div>
-        ${t.erp? `<div class="t-brand mono" style="text-align:right;">${escapeHtml(t.erp)}</div>`:''}
+        <div><div class="t-name">${escapeHtml(t.name)}</div>${t.brand ? `<div class="t-brand">${escapeHtml(t.brand)}</div>` : ''}</div>
+        ${t.erp ? `<div class="t-brand mono" style="text-align:right;">${escapeHtml(t.erp)}</div>` : ''}
       </div>
-      <div class="t-specs">${specs.filter(Boolean).join(' · ')}</div>
-      ${t.note? `<div class="t-specs" style="color:var(--text-tertiary);">備註：${escapeHtml(t.note)}</div>`:''}
-      ${t.updatedAt? `<div class="t-specs" style="color:var(--text-tertiary);">最後更新：${new Date(t.updatedAt).toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+      <div class="t-specs">${specs.join(' · ')}</div>
+      ${money.length ? `<div class="t-specs">${money.join('')}</div>` : ''}
+      ${t.note ? `<div class="t-specs" style="color:var(--text-tertiary);">備註：${escapeHtml(t.note)}</div>` : ''}
+      ${t.updatedAt ? `<div class="t-specs" style="color:var(--text-tertiary);">最後更新：${new Date(t.updatedAt).toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>` : ''}
       <div class="t-actions">
         <button class="use" data-action="use">用這支刀計算</button>
         <button data-action="edit">編輯</button>
+        <button data-action="copy">複製</button>
         <button class="del" data-action="del">刪除</button>
       </div>
-    </div>
-  `;
+    </div>`;
 }
-function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-$('toolCategories').addEventListener('click', async (e)=>{
-  const btn = e.target.closest('button[data-action]');
-  if(!btn) return;
-  const card = e.target.closest('.tool-card');
-  const id = card.dataset.id;
-  const tool = state.toolLibrary.find(t=>t.id===id);
-  if(!tool) return;
+$('toolCategories').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-action]'); if(!btn) return;
+  const tool = libTool(btn.closest('.tool-card').dataset.id); if(!tool) return;
   const action = btn.dataset.action;
-  if(action==='use'){
-    applyToolToCalc(tool);
-    toast('已帶入計算機');
-  } else if(action==='edit'){
-    openToolModal(tool);
-  } else if(action==='del'){
+  if(action==='use'){ applyToolToCalc(tool); toast('已帶入計算機'); }
+  else if(action==='edit') openToolModal(tool);
+  else if(action==='copy') openToolModal(tool, true);
+  else if(action==='del'){
     if(confirm(`確定要刪除「${tool.name}」嗎？此動作會影響全單位共用資料。`)){
-      const ok = await deleteToolFromCloud(id);
-      if(ok) toast('已刪除');
+      const backup = { ...tool };
+      deleteDoc(doc(toolsCollection, tool.id)).catch(()=>toast('刪除失敗，請稍後再試一次'));
+      toast(`已刪除「${tool.name}」`, '復原', ()=>{ saveToolToCloud(backup); toast('已復原'); });
     }
   }
 });
+$('toolSearch').addEventListener('input', e=>renderLibrary(e.target.value));
 
-$('toolSearch').addEventListener('input', (e)=>renderLibrary(e.target.value));
+/* 匯出 CSV */
+$('exportBtn').addEventListener('click', ()=>{
+  if(!state.toolLibrary.length){ toast('刀具庫是空的'); return; }
+  const cols = [
+    ['類別',t=>catName(t.category)],['刀具名稱',t=>t.name],['ERP',t=>t.erp],['廠牌型號',t=>t.brand],
+    ['直徑D',t=>t.d],['刃數Z',t=>t.z],['螺距P',t=>t.pitch],['適用材質',t=>matById(t.material).name],
+    ['Vc',t=>t.vc],['進給',t=>t.feed],['ap',t=>t.ap],['ae',t=>t.ae],
+    ['單價',t=>t.price],['壽命件數',t=>t.lifePcs],['每件刀具成本',t=>(t.price>0&&t.lifePcs>0)?(t.price/t.lifePcs).toFixed(2):''],
+    ['備註',t=>t.note],['最後更新',t=>t.updatedAt ? new Date(t.updatedAt).toLocaleString('zh-TW') : ''],
+  ];
+  const cell = v=>{
+    let s = v==null ? '' : String(v);
+    if(/^[=+@]/.test(s)) s = "'" + s;
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  };
+  const rows = [...state.toolLibrary].sort((a,b)=>
+    CATEGORIES.findIndex(c=>c.id===a.category) - CATEGORIES.findIndex(c=>c.id===b.category) || sortTools(a,b));
+  const csv = [cols.map(c=>c[0]).join(','), ...rows.map(t=>cols.map(c=>cell(c[1](t))).join(','))].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8' }));
+  a.download = `刀具庫備份_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  toast(`已匯出 ${rows.length} 支刀具`);
+});
 
-/* ============ 新增/編輯刀具 Modal ============ */
+/* 新增/編輯刀具 */
 let editingToolId = null;
-
-function populateMaterialSelect(){
-  $('tf_material').innerHTML = MATERIALS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-}
-populateMaterialSelect();
-
-function openToolModal(tool){
-  editingToolId = tool ? tool.id : null;
-  $('toolModalTitle').textContent = tool ? '編輯刀具' : '新增刀具';
-  $('tf_category').value = tool ? tool.category : 'endmill';
-  $('tf_name').value = tool ? tool.name : '';
-  $('tf_erp').value = tool ? (tool.erp||'') : '';
-  $('tf_erpHint').textContent = '留空也可以建立；若要填寫，必須是15碼的英文字母或數字組合。';
-  $('tf_erpHint').classList.remove('warn-text');
-  $('tf_brand').value = tool ? (tool.brand||'') : '';
-  $('tf_d').value = tool ? tool.d : '';
-  $('tf_z').value = tool ? (tool.z||'') : '';
-  $('tf_pitch').value = tool ? (tool.pitch||'') : '';
-  $('tf_material').value = tool ? tool.material : 'carbon';
-  $('tf_vc').value = tool ? (tool.vc||'') : '';
-  $('tf_feed').value = tool ? (tool.feed||'') : '';
-  $('tf_ap').value = tool ? (tool.ap||'') : '';
-  $('tf_ae').value = tool ? (tool.ae||'') : '';
-  $('tf_note').value = tool ? (tool.note||'') : '';
-  updateToolFormFields();
+$('tf_material').innerHTML = MATERIALS.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+function openToolModal(tool, isCopy=false){
+  editingToolId = (tool && !isCopy) ? tool.id : null;
+  $('toolModalTitle').textContent = isCopy ? '複製刀具' : (tool ? '編輯刀具' : '新增刀具');
+  const v = (k, d='')=> tool ? (tool[k] ?? d) : d;
+  $('tf_category').value = v('category','endmill');
+  $('tf_name').value = tool ? (isCopy ? tool.name + ' (複本)' : tool.name) : '';
+  $('tf_erp').value = isCopy ? '' : v('erp');
+  $('tf_brand').value = v('brand'); $('tf_d').value = v('d'); $('tf_z').value = v('z'); $('tf_pitch').value = v('pitch');
+  $('tf_material').value = tool ? (tool.material||'carbon') : state.material;
+  $('tf_vc').value = v('vc'); $('tf_feed').value = v('feed'); $('tf_ap').value = v('ap'); $('tf_ae').value = v('ae');
+  $('tf_price').value = v('price'); $('tf_life').value = v('lifePcs'); $('tf_note').value = v('note');
+  validateErpField(); updateToolFormFields();
   $('toolModalBackdrop').classList.add('active');
 }
-function closeToolModal(){
-  $('toolModalBackdrop').classList.remove('active');
-}
+function closeToolModal(){ $('toolModalBackdrop').classList.remove('active'); }
 function updateToolFormFields(){
-  const cat = $('tf_category').value;
-  const op = catOpType(cat);
+  const op = catOpType($('tf_category').value);
   $('tf_zWrap').style.display = op==='mill' ? '' : 'none';
   $('tf_pitchWrap').style.display = op==='tap' ? '' : 'none';
   $('tf_apAeWrap').style.display = op==='mill' ? '' : 'none';
-  $('tf_feedLabel').textContent = op==='mill' ? '建議每刃進給 fz' : (op==='drill' ? '建議每轉進給 f' : '(攻牙進給由螺距決定)');
-  $('tf_feed').closest('div').style.display = op==='tap' ? 'none' : '';
+  $('tf_feedWrap').style.display = op==='tap' ? 'none' : '';
+  $('tf_feedLabel').textContent = op==='mill' ? '建議每刃進給 fz' : '建議每轉進給 f';
 }
 $('tf_category').addEventListener('change', updateToolFormFields);
-
-const ERP_RE = /^[A-Za-z0-9]{15}$/;
+const ERP_RE = /^[A-Z0-9]{15}$/;
 function validateErpField(){
   const raw = $('tf_erp').value.toUpperCase();
   if($('tf_erp').value !== raw) $('tf_erp').value = raw;
-  const val = raw.trim();
-  if(val === ''){
-    $('tf_erp').classList.remove('field-error');
-    $('tf_erpHint').classList.remove('warn-text');
-    $('tf_erpHint').textContent = '留空也可以建立；若要填寫，必須是15碼的英文字母或數字組合。';
-    return true;
+  const val = raw.trim(), hint = $('tf_erpHint');
+  let ok = true;
+  if(val === '') hint.textContent = '留空也可以建立；若要填寫，必須是15碼的英文字母或數字組合。';
+  else if(!ERP_RE.test(val)){ hint.textContent = `目前 ${val.length} 碼，ERP號碼必須剛好15碼英文字母或數字，不能有符號或空白。`; ok = false; }
+  else {
+    const dup = state.toolLibrary.find(t=>t.erp===val && t.id!==editingToolId);
+    hint.textContent = dup ? `格式正確，但這個號碼已經用在「${dup.name}」，請確認是否重複建立。` : '格式正確。';
   }
-  if(!ERP_RE.test(val)){
-    $('tf_erp').classList.add('field-error');
-    $('tf_erpHint').classList.add('warn-text');
-    $('tf_erpHint').textContent = `目前 ${val.length} 碼，ERP號碼必須剛好15碼英文字母或數字，不能有符號或空白。`;
-    return false;
-  }
-  $('tf_erp').classList.remove('field-error');
-  $('tf_erpHint').classList.remove('warn-text');
-  $('tf_erpHint').textContent = '格式正確。';
-  return true;
+  $('tf_erp').classList.toggle('field-error', !ok);
+  hint.classList.toggle('warn-text', !ok);
+  return ok;
 }
 $('tf_erp').addEventListener('input', validateErpField);
-
 $('addToolBtn').addEventListener('click', ()=>openToolModal(null));
 $('toolModalClose').addEventListener('click', closeToolModal);
 $('toolFormCancel').addEventListener('click', closeToolModal);
-$('toolModalBackdrop').addEventListener('click', (e)=>{ if(e.target===$('toolModalBackdrop')) closeToolModal(); });
-
-$('toolFormSave').addEventListener('click', async ()=>{
-  const name = $('tf_name').value.trim();
-  const d = parseFloat($('tf_d').value);
+$('toolModalBackdrop').addEventListener('click', e=>{ if(e.target===$('toolModalBackdrop')) closeToolModal(); });
+$('toolFormSave').addEventListener('click', ()=>{
+  const name = $('tf_name').value.trim(), d = num('tf_d'), op = catOpType($('tf_category').value);
   if(!name){ toast('請輸入刀具名稱'); return; }
-  if(!d || d<=0){ toast('請輸入正確的直徑'); return; }
+  if(!(d>0)){ toast('請輸入正確的直徑'); return; }
   if(!validateErpField()){ toast('ERP號碼格式不正確，請修正或留空'); return; }
-
+  if(op==='tap' && !(num('tf_pitch')>0)){ toast('絲攻請輸入螺距'); return; }
+  const pos = id=>{ const v = num(id); return v>0 ? v : null; };
   const tool = {
-    id: editingToolId || ('t_' + Date.now() + '_' + Math.random().toString(36).slice(2,7)),
-    category: $('tf_category').value,
-    name,
-    erp: $('tf_erp').value.trim(),
-    brand: $('tf_brand').value.trim(),
-    d,
-    z: parseFloat($('tf_z').value) || null,
-    pitch: parseFloat($('tf_pitch').value) || null,
+    id: editingToolId || ('t_' + Date.now() + '_' + uid()),
+    category: $('tf_category').value, name, erp: $('tf_erp').value.trim(), brand: $('tf_brand').value.trim(), d,
+    z: op==='mill' ? pos('tf_z') : null,
+    pitch: op==='tap' ? pos('tf_pitch') : null,
     material: $('tf_material').value,
-    vc: parseFloat($('tf_vc').value) || null,
-    feed: parseFloat($('tf_feed').value) || null,
-    ap: parseFloat($('tf_ap').value) || null,
-    ae: parseFloat($('tf_ae').value) || null,
+    vc: pos('tf_vc'),
+    feed: op==='tap' ? null : pos('tf_feed'),
+    ap: op==='mill' ? pos('tf_ap') : null,
+    ae: op==='mill' ? pos('tf_ae') : null,
+    price: pos('tf_price'),
+    lifePcs: pos('tf_life'),
     note: $('tf_note').value.trim(),
     updatedAt: Date.now(),
   };
-
-  const ok = await saveToolToCloud(tool);
-  if(ok){
-    closeToolModal();
-    toast(editingToolId ? '已更新刀具' : '已新增刀具');
-  }
+  const wasEditing = !!editingToolId;
+  saveToolToCloud(tool); closeToolModal();
+  toast(wasEditing ? '已更新刀具' : '已新增刀具');
 });
 
-/* ============ 選刀 Modal（計算頁用） ============ */
+/* 選刀(計算頁) */
 $('pickToolBtn').addEventListener('click', ()=>{
-  renderPickList('');
-  $('pickSearch').value='';
+  $('pickSearch').value = ''; renderPickList('');
   $('pickModalBackdrop').classList.add('active');
-  setTimeout(()=>$('pickSearch').focus(), 50);
 });
 $('pickModalClose').addEventListener('click', ()=>$('pickModalBackdrop').classList.remove('active'));
-$('pickModalBackdrop').addEventListener('click', (e)=>{ if(e.target===$('pickModalBackdrop')) $('pickModalBackdrop').classList.remove('active'); });
-$('pickSearch').addEventListener('input', (e)=>renderPickList(e.target.value));
-
-function renderPickList(term){
-  term = term.trim().toLowerCase();
-  let tools = state.toolLibrary;
-  if(term){
-    tools = tools.filter(t=> (t.name||'').toLowerCase().includes(term) || (t.brand||'').toLowerCase().includes(term) || (t.erp||'').toLowerCase().includes(term));
-  }
-  const list = $('pickList');
-  if(tools.length===0){
-    list.innerHTML = `<div class="empty-state">${state.toolLibrary.length===0 ? '刀具庫還是空的，先到「刀具庫」頁新增幾支常用刀具吧' : '找不到符合的刀具'}</div>`;
-    return;
-  }
-  list.innerHTML = tools.map(t=>`
-    <div class="tool-card" data-id="${t.id}" style="cursor:pointer;">
-      <div class="tool-card-top">
-        <div class="t-name">${escapeHtml(t.name)}</div>
-        ${t.erp? `<div class="t-brand mono">${escapeHtml(t.erp)}</div>`:''}
-      </div>
-      ${t.brand? `<div class="t-brand">${escapeHtml(t.brand)}</div>`:''}
-      <div class="t-specs">${catName(t.category)} · Φ${t.d}mm${t.z? ' · '+t.z+'刃':''}${t.pitch? ' · 螺距'+t.pitch:''} · ${matById(t.material).name}</div>
-    </div>
-  `).join('');
-  list.querySelectorAll('.tool-card').forEach(card=>{
-    card.addEventListener('click', ()=>{
-      const tool = state.toolLibrary.find(t=>t.id===card.dataset.id);
-      if(tool){
-        applyToolToCalc(tool);
-        $('pickModalBackdrop').classList.remove('active');
-      }
-    });
-  });
+$('pickModalBackdrop').addEventListener('click', e=>{ if(e.target===$('pickModalBackdrop')) $('pickModalBackdrop').classList.remove('active'); });
+$('pickSearch').addEventListener('input', e=>renderPickList(e.target.value));
+function pickCardHtml(t){
+  return `<div class="tool-card clickable" data-id="${escapeHtml(t.id)}">
+      <div class="tool-card-top"><div class="t-name">${escapeHtml(t.name)}</div>${t.erp ? `<div class="t-brand mono">${escapeHtml(t.erp)}</div>` : ''}</div>
+      ${t.brand ? `<div class="t-brand">${escapeHtml(t.brand)}</div>` : ''}
+      <div class="t-specs">${catName(t.category)} · Φ${escapeHtml(t.d)}mm${t.z ? ' · '+escapeHtml(t.z)+'刃' : ''}${t.pitch ? ' · 螺距'+escapeHtml(t.pitch) : ''} · ${matById(t.material).name}</div>
+    </div>`;
 }
+function renderPickList(term){
+  term = (term||'').trim().toLowerCase();
+  const list = $('pickList');
+  if(!state.toolLibrary.length){ list.innerHTML = `<div class="empty-state">刀具庫還是空的，先到「刀具庫」頁新增幾支常用刀具吧</div>`; return; }
+  if(term){
+    const tools = state.toolLibrary.filter(t=>matchesTerm(t, term)).sort(sortTools);
+    list.innerHTML = tools.length ? tools.map(pickCardHtml).join('') : `<div class="empty-state">找不到符合的刀具</div>`;
+  } else {
+    const recentIds = store.get('recent-tools', []);
+    const recent = recentIds.map(libTool).filter(Boolean);
+    const rest = state.toolLibrary.filter(t=>!recentIds.includes(t.id)).sort(sortTools);
+    list.innerHTML = (recent.length ? `<div class="list-heading">最近使用</div>${recent.map(pickCardHtml).join('')}<div class="list-heading" style="margin-top:14px;">全部刀具</div>` : '')
+      + rest.map(pickCardHtml).join('');
+  }
+}
+$('pickList').addEventListener('click', e=>{
+  const card = e.target.closest('.tool-card'); if(!card) return;
+  const tool = libTool(card.dataset.id);
+  if(tool){ applyToolToCalc(tool); $('pickModalBackdrop').classList.remove('active'); }
+});
 
-/* ============ 材質對照頁 ============ */
+/* =====================================================================
+   查表:材質 / 鑽攻 / 公差
+   ===================================================================== */
 function renderMatList(){
   $('matList').innerHTML = MATERIALS.map(m=>`
     <div class="mat-card">
       <div class="m-name">${m.name}</div>
       <div class="m-desc">${m.desc}</div>
       <div class="m-range">銑削 Vc：${m.vc.mill[0]} – ${m.vc.mill[1]} m/min</div>
-      <div class="m-range">鑽孔／絞刀 Vc：${m.vc.drill[0]} – ${m.vc.drill[1]} m/min</div>
+      <div class="m-range">鑽孔 Vc：${m.vc.drill[0]} – ${m.vc.drill[1]} m/min</div>
       <div class="m-range">攻牙 Vc：${m.vc.tap[0]} – ${m.vc.tap[1]} m/min</div>
       <div class="m-tip">💡 ${m.tip}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
+const TAP_METRIC = [
+  {size:'M1.6',pitch:0.35,drill:1.25},{size:'M2',pitch:0.4,drill:1.6},{size:'M2.5',pitch:0.45,drill:2.05},
+  {size:'M3',pitch:0.5,drill:2.5},{size:'M3.5',pitch:0.6,drill:2.9},{size:'M4',pitch:0.7,drill:3.3},
+  {size:'M5',pitch:0.8,drill:4.2},{size:'M6',pitch:1.0,drill:5.0},{size:'M7',pitch:1.0,drill:6.0},
+  {size:'M8',pitch:1.25,drill:6.8},{size:'M8',pitch:1.0,drill:7.0,fine:true},
+  {size:'M10',pitch:1.5,drill:8.5},{size:'M10',pitch:1.25,drill:8.8,fine:true},
+  {size:'M12',pitch:1.75,drill:10.2},{size:'M12',pitch:1.5,drill:10.5,fine:true},
+  {size:'M14',pitch:2.0,drill:12.0},{size:'M14',pitch:1.5,drill:12.5,fine:true},
+  {size:'M16',pitch:2.0,drill:14.0},{size:'M16',pitch:1.5,drill:14.5,fine:true},
+  {size:'M18',pitch:2.5,drill:15.5},{size:'M18',pitch:1.5,drill:16.5,fine:true},
+  {size:'M20',pitch:2.5,drill:17.5},{size:'M20',pitch:1.5,drill:18.5,fine:true},
+  {size:'M22',pitch:2.5,drill:19.5},{size:'M22',pitch:1.5,drill:20.5,fine:true},
+  {size:'M24',pitch:3.0,drill:21.0},{size:'M24',pitch:2.0,drill:22.0,fine:true},
+  {size:'M27',pitch:3.0,drill:24.0},{size:'M30',pitch:3.5,drill:26.5},
+];
+const TAP_UNC = [
+  {size:'#1-64',drill:'#53',drillDec:0.0595},{size:'#2-56',drill:'#51',drillDec:0.067},{size:'#3-48',drill:'5/64',drillDec:0.078},
+  {size:'#4-40',drill:'#43',drillDec:0.089},{size:'#5-40',drill:'#39',drillDec:0.099},{size:'#6-32',drill:'#36',drillDec:0.106},
+  {size:'#8-32',drill:'#29',drillDec:0.136},{size:'#10-24',drill:'#25',drillDec:0.149},{size:'#12-24',drill:'#17',drillDec:0.173},
+  {size:'1/4-20',drill:'#7',drillDec:0.201},{size:'5/16-18',drill:'F',drillDec:0.257},{size:'3/8-16',drill:'5/16',drillDec:0.3125},
+  {size:'7/16-14',drill:'U',drillDec:0.368},{size:'1/2-13',drill:'27/64',drillDec:0.4219},{size:'9/16-12',drill:'31/64',drillDec:0.4844},
+  {size:'5/8-11',drill:'17/32',drillDec:0.5312},{size:'3/4-10',drill:'21/32',drillDec:0.6562},{size:'7/8-9',drill:'49/64',drillDec:0.7656},
+  {size:'1-8',drill:'7/8',drillDec:0.875},
+];
+const TAP_UNF = [
+  {size:'#1-72',drill:'#53',drillDec:0.0595},{size:'#2-64',drill:'#50',drillDec:0.070},{size:'#3-56',drill:'#46',drillDec:0.081},
+  {size:'#4-48',drill:'#42',drillDec:0.0935},{size:'#5-44',drill:'#37',drillDec:0.104},{size:'#6-40',drill:'#33',drillDec:0.113},
+  {size:'#8-36',drill:'#29',drillDec:0.136},{size:'#10-32',drill:'#21',drillDec:0.159},{size:'#12-28',drill:'#15',drillDec:0.180},
+  {size:'1/4-28',drill:'#3',drillDec:0.213},{size:'5/16-24',drill:'I',drillDec:0.272},{size:'3/8-24',drill:'Q',drillDec:0.332},
+  {size:'7/16-20',drill:'W',drillDec:0.386},{size:'1/2-20',drill:'29/64',drillDec:0.4531},{size:'9/16-18',drill:'33/64',drillDec:0.5156},
+  {size:'5/8-18',drill:'37/64',drillDec:0.5781},{size:'3/4-16',drill:'11/16',drillDec:0.6875},{size:'7/8-14',drill:'13/16',drillDec:0.8125},
+  {size:'1-12',drill:'15/16',drillDec:0.9375},
+];
+function parseInchThread(size){
+  const [a, tpi] = size.split('-');
+  let inch;
+  if(a[0]==='#') inch = 0.060 + 0.013*parseInt(a.slice(1),10);
+  else if(a.includes('/')){ const [n,d] = a.split('/'); inch = n/d; }
+  else inch = parseFloat(a);
+  return { d:+(inch*25.4).toFixed(2), pitch:+(25.4/parseInt(tpi,10)).toFixed(4) };
+}
+let tapStd = 'metric';
+function renderTapList(searchTerm){
+  const term = (searchTerm||'').trim().toLowerCase();
+  let html = '';
+  if(tapStd === 'metric'){
+    const list = TAP_METRIC.filter(r=>!term || r.size.toLowerCase().includes(term));
+    html = list.map(r=>`
+      <div class="tool-card">
+        <div class="tool-card-top">
+          <div class="t-name">${r.size} × ${r.pitch} <span class="tag">(${r.fine?'細牙':'粗牙'})</span></div>
+          <div class="t-name mono" style="color:var(--accent);">Ø${r.drill}mm</div>
+        </div>
+        <div class="t-actions">
+          <button class="use" data-act="tap" data-d="${parseFloat(r.size.slice(1))}" data-p="${r.pitch}">算攻牙轉速</button>
+          <button data-act="drill" data-d="${r.drill}">算底孔鑽削</button>
+        </div>
+      </div>`).join('');
+  } else {
+    const list = (tapStd === 'unc' ? TAP_UNC : TAP_UNF).filter(r=>!term || r.size.toLowerCase().includes(term));
+    html = list.map(r=>{
+      const t = parseInchThread(r.size), drillMm = (r.drillDec*25.4).toFixed(2);
+      return `<div class="tool-card">
+        <div class="tool-card-top">
+          <div class="t-name">${r.size}</div>
+          <div class="t-name mono" style="color:var(--accent);">${r.drill} <span class="tag">(${r.drillDec}" = Ø${drillMm}mm)</span></div>
+        </div>
+        <div class="t-actions">
+          <button class="use" data-act="tap" data-d="${t.d}" data-p="${t.pitch}">算攻牙轉速</button>
+          <button data-act="drill" data-d="${drillMm}">算底孔鑽削</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  $('tapList').innerHTML = html || `<div class="empty-state">找不到符合「${escapeHtml(searchTerm)}」的規格</div>`;
+}
+$('tapStdSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#tapStdSeg button').forEach(b=>b.classList.toggle('active', b===btn));
+  tapStd = btn.dataset.std; $('tapSearch').value = ''; renderTapList('');
+});
+$('tapSearch').addEventListener('input', e=>renderTapList(e.target.value));
+$('tapList').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-act]'); if(!b) return;
+  clearPickedTool(); setOp(b.dataset.act);
+  $('inD').value = b.dataset.d;
+  if(b.dataset.p) $('inPitch').value = b.dataset.p;
+  $('inFeed').value = '';
+  applyMaterialDefault(); switchView('calc'); calc();
+  toast(b.dataset.act==='tap' ? '已帶入攻牙計算' : '已帶入底孔鑽削計算');
+});
+
+/* ISO 286 公差(μm)。尺寸段上限:3,6,10,18,30,50,80,120,180,250,315,400,500 mm */
+const SIZE_UP = [3,6,10,18,30,50,80,120,180,250,315,400,500];
+const IT = {
+  5:[4,5,6,8,9,11,13,15,18,20,23,25,27],
+  6:[6,8,9,11,13,16,19,22,25,29,32,36,40],
+  7:[10,12,15,18,21,25,30,35,40,46,52,57,63],
+  8:[14,18,22,27,33,39,46,54,63,72,81,89,97],
+  9:[25,30,36,43,52,62,74,87,100,115,130,140,155],
+  11:[60,75,90,110,130,160,190,220,250,290,320,360,400],
+};
+/* 軸基本偏差:e f g h 為上偏差 es;k m n p 為下偏差 ei */
+const FD = {
+  e:[-14,-20,-25,-32,-40,-50,-60,-72,-85,-100,-110,-125,-135],
+  f:[-6,-10,-13,-16,-20,-25,-30,-36,-43,-50,-56,-62,-68],
+  g:[-2,-4,-5,-6,-7,-9,-10,-12,-14,-15,-17,-18,-20],
+  h:[0,0,0,0,0,0,0,0,0,0,0,0,0],
+  k:[0,1,1,1,2,2,2,3,3,4,4,4,5],
+  m:[2,4,6,7,8,9,11,13,15,17,20,21,23],
+  n:[4,8,10,12,15,17,20,23,27,31,34,37,40],
+  p:[6,12,15,18,22,26,32,37,43,50,56,62,68],
+};
+const DELTA7 = [0,4,6,7,8,9,11,13,15,17,20,21,23];   // IT7 孔的 Δ 修正值
+const HOLE_CLASSES = ['H6','H7','H8','H9','H11','G7','F7','F8','E8','JS7','K7','M7','N7','P7'];
+const SHAFT_CLASSES = ['h6','h7','h8','h9','h11','g6','f7','e8','js6','k6','m6','n6','p6'];
+function splitClass(c){ const m = c.match(/^([A-Za-z]+)(\d+)$/); return [m[1], parseInt(m[2],10)]; }
+function shaftDev(cls, i){
+  const [L, g] = splitClass(cls), it = IT[g][i];
+  if(L==='js') return [it/2, -it/2];
+  if('efgh'.includes(L)){ const es = FD[L][i]; return [es, es-it]; }
+  const ei = (L==='k' && !(g>=4 && g<=7)) ? 0 : FD[L][i];
+  return [ei+it, ei];
+}
+function holeDev(cls, i){
+  const [L, g] = splitClass(cls), it = IT[g][i], l = L.toLowerCase();
+  if(L==='JS') return [it/2, -it/2];
+  if('EFGH'.includes(L)){ const EI = FD[l][i] === 0 ? 0 : -FD[l][i]; return [EI+it, EI]; }
+  const ES = -FD[l][i] + DELTA7[i];   // K/M/N/P(IT7):ES = -ei + Δ
+  return [ES, ES-it];
+}
+$('tl_hole').innerHTML = `<option value="">不選</option>` + HOLE_CLASSES.map(c=>`<option ${c==='H7'?'selected':''}>${c}</option>`).join('');
+$('tl_shaft').innerHTML = `<option value="">不選</option>` + SHAFT_CLASSES.map(c=>`<option ${c==='g6'?'selected':''}>${c}</option>`).join('');
+const sgn = v => v > 0 ? `+${v}` : (v === 0 ? '0' : `${v}`);
+function renderTol(){
+  const D = num('tl_d'), box = $('tolResult');
+  store.set('tol-inputs', {d:$('tl_d').value, h:$('tl_hole').value, s:$('tl_shaft').value});
+  if(!(D>0)){ box.innerHTML = ''; return; }
+  if(D > 500){ box.innerHTML = `<div class="advice warn"><b>注意：</b>本表只支援 500 mm 以下。</div>`; return; }
+  const i = SIZE_UP.findIndex(u=>D<=u);
+  const range = `超過 ${i===0?0:SIZE_UP[i-1]} ～ ${SIZE_UP[i]} mm`;
+  const hc = $('tl_hole').value, sc = $('tl_shaft').value;
+  const lim = (dev, cls, kind)=> `
+    <div class="result-line"><span class="k">${kind} Ø${D} <b style="color:var(--text-primary)">${cls}</b></span><span class="v">${sgn(dev[0])} / ${sgn(dev[1])} μm</span></div>
+    <div class="result-line"><span class="k">尺寸範圍</span><span class="v">${(D+dev[1]/1000).toFixed(3)} ~ ${(D+dev[0]/1000).toFixed(3)}</span></div>`;
+  let html = `<div class="result-box"><div class="hint" style="margin:0 0 6px;">尺寸段：${range}</div>`;
+  let hd = null, sd = null;
+  if(hc){ hd = holeDev(hc, i); html += lim(hd, hc, '孔'); }
+  if(hc && sc) html += `<div class="divider"></div>`;
+  if(sc){ sd = shaftDev(sc, i); html += lim(sd, sc, '軸'); }
+  if(hd && sd){
+    const maxC = hd[0] - sd[1], minC = hd[1] - sd[0];
+    let tag;
+    if(minC >= 0) tag = `<span class="fit-tag clear">間隙配合</span>`;
+    else if(maxC <= 0) tag = `<span class="fit-tag press">干涉配合 (壓入)</span>`;
+    else tag = `<span class="fit-tag trans">過渡配合</span>`;
+    const row = (k, v) => `<div class="result-line"><span class="k">${k}</span><span class="v">${v} μm</span></div>`;
+    let rows;
+    if(minC >= 0) rows = row('最大間隙', maxC) + row('最小間隙', minC);
+    else if(maxC <= 0) rows = row('最大干涉', -minC) + row('最小干涉', -maxC);
+    else rows = row('最大間隙', maxC) + row('最大干涉', -minC);
+    html += `<div class="divider"></div>
+      <div class="result-line"><span class="k">${hc}/${sc}</span>${tag}</div>` + rows;
+  }
+  box.innerHTML = html + `</div>`;
+}
+['tl_d','tl_hole','tl_shaft'].forEach(id=>$(id).addEventListener(id==='tl_d'?'input':'change', renderTol));
+$('fitQuick').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  $('tl_hole').value = b.dataset.h; $('tl_shaft').value = b.dataset.s;
+  if(!(num('tl_d')>0)) $('tl_d').focus();
+  renderTol();
+});
+
+/* =====================================================================
+   工具:螺栓孔圓 / 粗糙度
+   ===================================================================== */
+let bcDir = 'ccw';
+$('bc_dir').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  bcDir = b.dataset.dir;
+  document.querySelectorAll('#bc_dir button').forEach(x=>x.classList.toggle('active', x===b));
+  renderBolt();
+});
+function renderBolt(){
+  const pcd = num('bc_pcd'), n = Math.round(num('bc_n'));
+  const start = num('bc_start') || 0, cx = num('bc_cx') || 0, cy = num('bc_cy') || 0;
+  const box = $('bcResult');
+  store.set('bc-inputs', {pcd:$('bc_pcd').value, n:$('bc_n').value, start:$('bc_start').value, cx:$('bc_cx').value, cy:$('bc_cy').value, dir:bcDir});
+  if(!(pcd>0) || !(n>=1) || n > 360){ box.innerHTML = ''; return; }
+  const R = pcd/2, step = 360/n * (bcDir==='ccw' ? 1 : -1);
+  const pts = [];
+  for(let k=0;k<n;k++){
+    const ang = start + step*k, rad = ang*Math.PI/180;
+    pts.push({ k:k+1, ang:((ang%360)+360)%360, x:cx + R*Math.cos(rad), y:cy + R*Math.sin(rad) });
+  }
+  const f3 = v => { const s = v.toFixed(3); return s === '-0.000' ? '0.000' : s; };
+  const SC = 46;
+  const svgPts = pts.map(p=>{ const rad = p.ang*Math.PI/180; return { ...p, sx: SC*Math.cos(rad), sy: -SC*Math.sin(rad) }; });
+  const svg = `<svg class="bolt-svg" viewBox="-62 -62 124 124" role="img" aria-label="孔位預覽">
+    <line x1="-58" y1="0" x2="58" y2="0" stroke="var(--border-strong)" stroke-width=".6" stroke-dasharray="3 2"/>
+    <line x1="0" y1="-58" x2="0" y2="58" stroke="var(--border-strong)" stroke-width=".6" stroke-dasharray="3 2"/>
+    <circle r="${SC}" fill="none" stroke="var(--text-tertiary)" stroke-width=".7" stroke-dasharray="4 2"/>
+    <text x="59" y="-2.5" font-size="5" fill="var(--text-tertiary)" text-anchor="end">+X</text>
+    ${svgPts.map(p=>`<circle cx="${p.sx.toFixed(2)}" cy="${p.sy.toFixed(2)}" r="${n>24?2:4}" fill="${p.k===1?'var(--accent)':'var(--bg-panel-raised)'}" stroke="var(--accent)" stroke-width="1"/>
+      ${n<=24?`<text x="${(p.sx*0.78).toFixed(2)}" y="${(p.sy*0.78+2).toFixed(2)}" font-size="5.5" fill="var(--text-secondary)" text-anchor="middle">${p.k}</text>`:''}`).join('')}
+    <circle r="1.6" fill="var(--text-tertiary)"/>
+  </svg>`;
+  const lines = pts.map(p=>`X${f3(p.x)} Y${f3(p.y)}`).join('\n');
+  box.innerHTML = svg + `
+    <table class="data"><tr><th>#</th><th class="num">角度</th><th class="num">X</th><th class="num">Y</th></tr>
+    ${pts.map(p=>`<tr><td>${p.k}</td><td class="num">${+p.ang.toFixed(3)}°</td><td class="num">${f3(p.x)}</td><td class="num">${f3(p.y)}</td></tr>`).join('')}
+    </table>
+    <div class="btn-row"><button class="btn btn-ghost" id="bcCopy">複製座標 (每孔一行 X… Y…)</button></div>
+    <div class="hint">相鄰孔間距 (弦長)：${n>1 ? (2*R*Math.sin(Math.PI/n)).toFixed(3)+' mm' : '—'}</div>`;
+  $('bcCopy').onclick = ()=>copyText(lines);
+}
+['bc_pcd','bc_n','bc_start','bc_cx','bc_cy'].forEach(id=>$(id).addEventListener('input', renderBolt));
+
+function renderRough(){
+  const f = num('rg_f'), r = num('rg_r'), target = num('rg_target');
+  store.set('rg-inputs', {f:$('rg_f').value, r:$('rg_r').value, t:$('rg_target').value});
+  let html = '';
+  if(f>0 && r>0){
+    const Rz = f*f/(8*r)*1000, Ra = f*f/(32*r)*1000;
+    html += `<div class="result-line"><span class="k">理論 Rz</span><span class="v">${Rz.toFixed(2)} μm</span></div>
+             <div class="result-line"><span class="k">理論 Ra</span><span class="v">${Ra.toFixed(2)} μm</span></div>`;
+  }
+  if(target>0 && r>0){
+    const fMax = Math.sqrt(target/1000*32*r);
+    html += `<div class="result-line"><span class="k">要 Ra ${target} μm，進給上限</span><span class="v">${fMax.toFixed(3)} mm</span></div>`;
+  }
+  $('rgResult').innerHTML = html ? `<div class="result-box">${html}</div>` : '';
+}
+['rg_f','rg_r','rg_target'].forEach(id=>$(id).addEventListener('input', renderRough));
+
+function renderScallop(){
+  const D = num('sc_d'), s = num('sc_s'), hT = num('sc_h');
+  store.set('sc-inputs', {d:$('sc_d').value, s:$('sc_s').value, h:$('sc_h').value});
+  const R = D/2;
+  let html = '';
+  if(D>0 && s>0){
+    if(s >= D) html += `<div class="advice warn"><b>注意：</b>步距不可大於等於球刀直徑。</div>`;
+    else {
+      const h = (R - Math.sqrt(R*R - (s/2)*(s/2))) * 1000;
+      html += `<div class="result-line"><span class="k">殘留高度</span><span class="v">${h.toFixed(2)} μm</span></div>`;
+    }
+  }
+  if(D>0 && hT>0){
+    const h = hT/1000;
+    if(h >= R) html += `<div class="advice warn"><b>注意：</b>殘留高度不可大於球刀半徑。</div>`;
+    else {
+      const step = 2*Math.sqrt(2*R*h - h*h);
+      html += `<div class="result-line"><span class="k">要殘留 ${hT} μm，步距</span><span class="v">${step.toFixed(3)} mm</span></div>`;
+    }
+  }
+  $('scResult').innerHTML = html ? `<div class="result-box">${html}</div>` : '';
+}
+['sc_d','sc_s','sc_h'].forEach(id=>$(id).addEventListener('input', renderScallop));
+
+/* ============ Esc 關閉視窗 ============ */
+document.addEventListener('keydown', e=>{
+  if(e.key !== 'Escape') return;
+  ['pickModalBackdrop','jobsModalBackdrop','toolModalBackdrop'].forEach(id=>$(id).classList.remove('active'));
+});
+
 /* ============ 初始化 ============ */
+function restoreFields(key, map){
+  const s = store.get(key); if(!s) return;
+  Object.entries(map).forEach(([k,id])=>{ if(s[k] != null) $(id).value = s[k]; });
+}
 function init(){
-  renderMatChips();
-  applyMaterialDefault();
-  updateOpUI();
-  renderMatList();
-  renderTapList('');
+  // 計算頁
+  const hadVc = restoreInputs();
+  syncToolMatSeg(); setOp(state.op);
+  if(hadVc) updateVcHint(); else applyMaterialDefault();
   calc();
-  startLibrarySync();
+
+  // 工時頁
+  const draft = store.get('job-draft');
+  job = (draft && draft.job) ? Object.assign(newJob(), draft.job) : newJob();
+  job.ops = (job.ops||[]).map(o=>Object.assign(newOp(), o));
+  jobDirty = !!(draft && draft.dirty);
+  const cap = capSettings();
+  $('cp_hours').value = cap.hours; $('cp_eff').value = cap.eff; $('cp_shifts').value = cap.shifts;
+  fillJobForm(); renderOps();
+
+  // 查表 / 工具
+  renderMatList(); renderTapList('');
+  restoreFields('tol-inputs', {d:'tl_d', h:'tl_hole', s:'tl_shaft'}); renderTol();
+  restoreFields('bc-inputs', {pcd:'bc_pcd', n:'bc_n', start:'bc_start', cx:'bc_cx', cy:'bc_cy'});
+  const bc = store.get('bc-inputs');
+  if(bc && bc.dir === 'cw'){ bcDir = 'cw'; document.querySelectorAll('#bc_dir button').forEach(x=>x.classList.toggle('active', x.dataset.dir==='cw')); }
+  renderBolt();
+  restoreFields('rg-inputs', {f:'rg_f', r:'rg_r', t:'rg_target'}); renderRough();
+  restoreFields('sc-inputs', {d:'sc_d', s:'sc_s', h:'sc_h'}); renderScallop();
+
+  initGate();
 }
 init();
 </script>
