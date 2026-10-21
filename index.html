@@ -839,15 +839,10 @@ try{
 const toolsCollection = collection(db, 'tools');
 const jobsCollection = collection(db, 'jobs');
 
-/* ============ 存取密碼 ============
-   (A) TEAM_EMAIL 留空 → 畫面密碼 ACCESS_CODE(只擋一般訪客,看原始碼就看得到密碼)
-   (B) TEAM_EMAIL 填入 → 真正的 Firebase 帳號驗證:
-       1. Firebase 主控台 → Authentication → 啟用「電子郵件/密碼」
-       2. 新增使用者,例如 cnc-team@你的公司.com,密碼設成部門密碼
-       3. 把 email 填到下面 TEAM_EMAIL
-       4. 套用 firestore.rules */
+/* ============ 部門帳號登入 ============
+   密碼存在 Firebase(Authentication → 使用者),不在程式裡。
+   要改密碼:Firebase → Authentication → 使用者 → cnc-team@cnc.com 右邊「⋮」→ 重設密碼 */
 const TEAM_EMAIL = 'cnc-team@cnc.com';
-const ACCESS_CODE = 'cnc2026';
 
 /* ============ 小工具 ============ */
 function $(id){ return document.getElementById(id); }
@@ -909,17 +904,14 @@ function unlockApp(){
   $('gateOverlay').style.display = 'none';
   if(!syncStarted){ syncStarted = true; startLibrarySync(); startJobsSync(); }
 }
-const auth = TEAM_EMAIL ? getAuth(fbApp) : null;
+const auth = getAuth(fbApp);
 function initGate(){
   const input = $('gateInput'), err = $('gateError'), btn = $('gateSubmit');
-  if(auth){
-    onAuthStateChanged(auth, user=>{ if(user) unlockApp(); else $('gateOverlay').style.display = 'flex'; });
-  } else if(store.get('gate-unlocked') === 1 || localStorage.getItem('gate-unlocked') === '1'){
-    unlockApp();
-  }
+  try{ localStorage.removeItem('gate-unlocked'); }catch(e){}
+  onAuthStateChanged(auth, user=>{ if(user) unlockApp(); else $('gateOverlay').style.display = 'flex'; });
   async function tryUnlock(){
     err.textContent = '';
-    if(auth){
+    {
       btn.disabled = true; btn.textContent = '驗證中...';
       try{ await signInWithEmailAndPassword(auth, TEAM_EMAIL, input.value); }
       catch(e){
@@ -932,10 +924,6 @@ function initGate(){
         })[e.code] || '密碼錯誤，請確認後再試一次';
       }
       finally{ btn.disabled = false; btn.textContent = '進入'; }
-    } else if(input.value === ACCESS_CODE){
-      store.set('gate-unlocked', 1); unlockApp();
-    } else {
-      err.textContent = '密碼錯誤，請確認後再試一次';
     }
   }
   btn.addEventListener('click', tryUnlock);
