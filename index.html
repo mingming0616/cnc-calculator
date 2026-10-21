@@ -553,9 +553,10 @@
     <div class="panel">
       <div class="panel-title"><span class="pt">部門共用刀具庫</span><span class="pt-side">雲端同步</span></div>
       <div class="sync-status" id="syncStatus"></div>
+      <div id="backupNudge"></div>
       <div class="search-bar">
         <input type="text" id="toolSearch" placeholder="搜尋名稱、ERP、直徑...">
-        <button class="icon-btn" id="exportBtn" title="匯出 Excel 備份">匯出</button>
+        <button class="icon-btn" id="backupBtn" title="備份 / 還原">備份</button>
         <button class="fab" id="addToolBtn" aria-label="新增刀具">＋</button>
       </div>
       <div id="toolLibLoading" class="empty-state">連接雲端資料庫中...</div>
@@ -703,6 +704,30 @@
   </button>
 </nav>
 
+<!-- 備份 / 還原 -->
+<div class="modal-backdrop" id="backupModalBackdrop">
+  <div class="modal">
+    <button class="modal-close" id="backupModalClose" aria-label="關閉">✕</button>
+    <h2>資料備份 / 還原</h2>
+    <div class="hint" id="backupLast" style="margin:-6px 0 14px;"></div>
+
+    <div class="panel-title"><span class="pt">備份</span></div>
+    <button class="btn btn-primary" id="bkDownload">下載完整備份檔（刀具＋工件）</button>
+    <div class="hint">建議每月一次，存到電腦或雲端硬碟（例如 Google 雲端硬碟）。資料被誤刪時，可以用這個檔案救回來。</div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="bkCsvTools">刀具清單 (Excel)</button>
+      <button class="btn btn-ghost" id="bkCsvJobs">工件清單 (Excel)</button>
+    </div>
+    <div class="hint">Excel 檔方便查看、列印，但<b style="color:var(--text-secondary)">不能</b>用來還原。</div>
+
+    <div class="panel-title" style="margin-top:22px;"><span class="pt">還原</span></div>
+    <button class="btn btn-ghost" id="bkPick">選擇備份檔...</button>
+    <input type="file" id="bkFile" accept=".json,application/json" style="display:none">
+    <div class="hint">還原只會「補回」或「改回」備份檔裡有的資料，不會刪除任何現有資料。</div>
+    <div id="bkPreview"></div>
+  </div>
+</div>
+
 <!-- 選刀 -->
 <div class="modal-backdrop" id="pickModalBackdrop">
   <div class="modal">
@@ -791,7 +816,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-         collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+         collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 /* ============ Firebase 初始化(部門共用資料庫) ============ */
@@ -897,7 +922,15 @@ function initGate(){
     if(auth){
       btn.disabled = true; btn.textContent = '驗證中...';
       try{ await signInWithEmailAndPassword(auth, TEAM_EMAIL, input.value); }
-      catch(e){ err.textContent = (e.code === 'auth/network-request-failed') ? '網路連線失敗，請稍後再試' : '密碼錯誤，請確認後再試一次'; }
+      catch(e){
+        console.error(e);
+        err.textContent = ({
+          'auth/network-request-failed':'網路連線失敗，請稍後再試',
+          'auth/too-many-requests':'嘗試太多次，請等幾分鐘後再試',
+          'auth/operation-not-allowed':'Firebase 尚未啟用「電子郵件/密碼」登入',
+          'auth/user-not-found':'找不到部門帳號，請確認 Firebase 已新增使用者',
+        })[e.code] || '密碼錯誤，請確認後再試一次';
+      }
       finally{ btn.disabled = false; btn.textContent = '進入'; }
     } else if(input.value === ACCESS_CODE){
       store.set('gate-unlocked', 1); unlockApp();
@@ -1617,6 +1650,7 @@ function startJobsSync(){
   onSnapshot(jobsCollection, snap=>{
     jobsError = '';
     state.jobs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    updateBackupInfo();
     if($('jobsModalBackdrop').classList.contains('active')) renderJobsList($('jobsSearch').value);
   }, err=>{
     console.error(err);
@@ -1636,6 +1670,7 @@ function startLibrarySync(){
     if(snapshot.metadata.fromCache){ st.textContent = '⚠ 目前顯示本機快取資料(離線或連線中)，修改會在連線後自動上傳'; st.className = 'sync-status offline'; }
     else if(snapshot.metadata.hasPendingWrites){ st.textContent = '同步中...'; st.className = 'sync-status offline'; }
     else { st.textContent = `● 已與雲端同步，共 ${state.toolLibrary.length} 支刀具`; st.className = 'sync-status'; }
+    updateBackupInfo();
     renderLibrary($('toolSearch').value);
     if($('pickModalBackdrop').classList.contains('active')) renderPickList($('pickSearch').value);
     // 工時頁:沒在輸入時才整個重繪,避免打字中斷
@@ -1740,8 +1775,59 @@ $('toolCategories').addEventListener('click', e=>{
 });
 $('toolSearch').addEventListener('input', e=>renderLibrary(e.target.value));
 
-/* 匯出 CSV */
-$('exportBtn').addEventListener('click', ()=>{
+/* =====================================================================
+   備份 / 還原
+   ===================================================================== */
+const today = ()=> { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+function downloadBlob(content, filename, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function downloadCsv(filename, cols, rows){
+  const cell = v=>{
+    let s = v==null ? '' : String(v);
+    if(/^[=+@]/.test(s)) s = "'" + s;          // 避免 Excel 公式注入
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  };
+  const csv = [cols.map(c=>c[0]).join(','), ...rows.map(r=>cols.map(c=>cell(c[1](r))).join(','))].join('\r\n');
+  downloadBlob('﻿' + csv, filename, 'text/csv;charset=utf-8');
+}
+const BACKUP_REMIND_DAYS = 30;
+function daysSinceBackup(){
+  const t = store.get('last-backup');
+  return t ? Math.floor((Date.now() - t) / 86400000) : null;
+}
+function updateBackupInfo(){
+  const d = daysSinceBackup();
+  $('backupLast').textContent = d === null ? '這台裝置還沒有下載過備份。' : `這台裝置上次備份：${d === 0 ? '今天' : d + ' 天前'}`;
+  const nudge = $('backupNudge');
+  const hasData = state.toolLibrary.length || state.jobs.length;
+  if(hasData && (d === null || d >= BACKUP_REMIND_DAYS)){
+    nudge.innerHTML = `<div class="advice warn" style="margin:0 0 10px;"><b>提醒：</b>${d === null ? '還沒有備份過資料' : `已經 ${d} 天沒有備份`}，建議下載一份備份檔存起來。<button class="link-btn" id="nudgeBackup">立即備份</button></div>`;
+    $('nudgeBackup').onclick = openBackupModal;
+  } else nudge.innerHTML = '';
+}
+function openBackupModal(){
+  updateBackupInfo();
+  $('bkPreview').innerHTML = ''; $('bkFile').value = '';
+  $('backupModalBackdrop').classList.add('active');
+}
+$('backupBtn').addEventListener('click', openBackupModal);
+$('backupModalClose').addEventListener('click', ()=>$('backupModalBackdrop').classList.remove('active'));
+$('backupModalBackdrop').addEventListener('click', e=>{ if(e.target===$('backupModalBackdrop')) $('backupModalBackdrop').classList.remove('active'); });
+
+$('bkDownload').addEventListener('click', ()=>{
+  if(!state.toolLibrary.length && !state.jobs.length){ toast('目前沒有資料可以備份'); return; }
+  const data = { app:'cnc-helper', version:1, exportedAt:Date.now(), tools:state.toolLibrary, jobs:state.jobs };
+  downloadBlob(JSON.stringify(data, null, 1), `CNC小幫手備份_${today()}.json`, 'application/json');
+  store.set('last-backup', Date.now());
+  updateBackupInfo();
+  toast(`已下載備份：刀具 ${state.toolLibrary.length} 支、工件 ${state.jobs.length} 個`);
+});
+$('bkCsvTools').addEventListener('click', ()=>{
   if(!state.toolLibrary.length){ toast('刀具庫是空的'); return; }
   const cols = [
     ['類別',t=>catName(t.category)],['刀具名稱',t=>t.name],['ERP',t=>t.erp],['廠牌型號',t=>t.brand],
@@ -1750,21 +1836,108 @@ $('exportBtn').addEventListener('click', ()=>{
     ['單價',t=>t.price],['壽命件數',t=>t.lifePcs],['每件刀具成本',t=>(t.price>0&&t.lifePcs>0)?(t.price/t.lifePcs).toFixed(2):''],
     ['備註',t=>t.note],['最後更新',t=>t.updatedAt ? new Date(t.updatedAt).toLocaleString('zh-TW') : ''],
   ];
-  const cell = v=>{
-    let s = v==null ? '' : String(v);
-    if(/^[=+@]/.test(s)) s = "'" + s;
-    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
-  };
   const rows = [...state.toolLibrary].sort((a,b)=>
     CATEGORIES.findIndex(c=>c.id===a.category) - CATEGORIES.findIndex(c=>c.id===b.category) || sortTools(a,b));
-  const csv = [cols.map(c=>c[0]).join(','), ...rows.map(t=>cols.map(c=>cell(c[1](t))).join(','))].join('\r\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8' }));
-  a.download = `刀具庫備份_${new Date().toISOString().slice(0,10)}.csv`;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  downloadCsv(`刀具清單_${today()}.csv`, cols, rows);
   toast(`已匯出 ${rows.length} 支刀具`);
 });
+$('bkCsvJobs').addEventListener('click', ()=>{
+  if(!state.jobs.length){ toast('還沒有已存的工件'); return; }
+  const cols = [
+    ['工件名稱',j=>j.name],['料號',j=>j.partNo],['材質',j=>matById(j.material).name],['需求件數',j=>j.qty],
+    ['工序數',j=>(j.ops||[]).length],['單件工時(秒)',j=>j.cycleSec],['單件工時',j=>j.cycleSec ? fmtTime(j.cycleSec) : ''],
+    ['單件刀具成本',j=>j.toolCostPerPc],['最後更新',j=>j.updatedAt ? new Date(j.updatedAt).toLocaleString('zh-TW') : ''],
+  ];
+  const rows = [...state.jobs].sort((a,b)=>String(a.name).localeCompare(String(b.name),'zh-Hant'));
+  downloadCsv(`工件清單_${today()}.csv`, cols, rows);
+  toast(`已匯出 ${rows.length} 個工件`);
+});
+
+/* 還原:先檢查檔案內容,顯示預覽,再讓使用者選擇還原方式 */
+const TOOL_KEYS = ['category','name','erp','brand','d','z','pitch','material','vc','feed','ap','ae','price','lifePcs','note','updatedAt'];
+const validId = id => typeof id === 'string' && id.length > 0 && id.length < 200 && !id.includes('/') && !id.startsWith('__');
+function cleanTool(t){
+  if(!t || !validId(t.id)) return null;
+  if(!CATEGORIES.some(c=>c.id===t.category)) return null;
+  if(typeof t.name !== 'string' || !t.name.trim()) return null;
+  const d = Number(t.d); if(!(d > 0)) return null;
+  const o = { id:t.id };
+  TOOL_KEYS.forEach(k=>{ if(t[k] !== undefined) o[k] = t[k]; });
+  o.d = d;
+  if(!MATERIALS.some(m=>m.id===o.material)) o.material = 'carbon';
+  return o;
+}
+function cleanJob(j){
+  if(!j || !validId(j.id)) return null;
+  if(typeof j.name !== 'string' || !j.name.trim()) return null;
+  if(!Array.isArray(j.ops) || j.ops.length > 60) return null;
+  return JSON.parse(JSON.stringify(j));
+}
+let pendingRestore = null;
+$('bkPick').addEventListener('click', ()=>$('bkFile').click());
+$('bkFile').addEventListener('change', async ()=>{
+  const f = $('bkFile').files[0]; if(!f) return;
+  const box = $('bkPreview');
+  pendingRestore = null;
+  try{
+    if(f.size > 20*1024*1024) throw new Error('檔案太大');
+    const data = JSON.parse(await f.text());
+    if(!data || data.app !== 'cnc-helper' || !Array.isArray(data.tools) || !Array.isArray(data.jobs)) throw new Error('不是本工具的備份檔');
+    const tools = data.tools.map(cleanTool).filter(Boolean);
+    const jobs = data.jobs.map(cleanJob).filter(Boolean);
+    const skipped = (data.tools.length - tools.length) + (data.jobs.length - jobs.length);
+    const toolIds = new Set(state.toolLibrary.map(t=>t.id)), jobIds = new Set(state.jobs.map(j=>j.id));
+    const missTools = tools.filter(t=>!toolIds.has(t.id)), missJobs = jobs.filter(j=>!jobIds.has(j.id));
+    pendingRestore = { tools, jobs, missTools, missJobs };
+    box.innerHTML = `<div class="result-box">
+      <div class="result-line"><span class="k">備份時間</span><span class="v" style="font-size:13px;">${data.exportedAt ? new Date(data.exportedAt).toLocaleString('zh-TW') : '未知'}</span></div>
+      <div class="result-line"><span class="k">檔案內的刀具</span><span class="v">${tools.length} 支</span></div>
+      <div class="result-line"><span class="k">　其中目前已不存在(被刪掉)</span><span class="v">${missTools.length} 支</span></div>
+      <div class="result-line"><span class="k">檔案內的工件</span><span class="v">${jobs.length} 個</span></div>
+      <div class="result-line"><span class="k">　其中目前已不存在(被刪掉)</span><span class="v">${missJobs.length} 個</span></div>
+      ${skipped ? `<div class="hint warn-text">有 ${skipped} 筆資料格式不正確，會略過。</div>` : ''}
+    </div>
+    <div class="btn-row" style="flex-direction:column;">
+      <button class="btn btn-primary" id="bkRestoreMissing" ${missTools.length+missJobs.length ? '' : 'disabled'}>只補回被刪掉的資料（建議）</button>
+      <button class="btn btn-ghost" id="bkRestoreAll">全部改回備份時的內容</button>
+    </div>
+    <div class="hint">「全部改回」會把現有資料改回備份當時的數值，備份之後才新增的資料不受影響。</div>`;
+    $('bkRestoreMissing').onclick = ()=>runRestore(false);
+    $('bkRestoreAll').onclick = ()=>runRestore(true);
+  }catch(e){
+    console.error(e);
+    box.innerHTML = `<div class="advice warn"><b>無法讀取：</b>${escapeHtml(e.message === '不是本工具的備份檔' || e.message === '檔案太大' ? e.message : '檔案格式錯誤，請確認選的是「CNC小幫手備份_日期.json」')}</div>`;
+  }
+});
+async function writeAll(colRef, docs, onProgress){
+  for(let i = 0; i < docs.length; i += 400){
+    const batch = writeBatch(db);
+    docs.slice(i, i+400).forEach(d=>{ const { id, ...data } = d; batch.set(doc(colRef, id), data); });
+    await batch.commit();
+    onProgress(Math.min(i+400, docs.length));
+  }
+}
+async function runRestore(all){
+  if(!pendingRestore) return;
+  const tools = all ? pendingRestore.tools : pendingRestore.missTools;
+  const jobs  = all ? pendingRestore.jobs  : pendingRestore.missJobs;
+  if(!tools.length && !jobs.length){ toast('沒有需要還原的資料'); return; }
+  if(all && !confirm(`確定要把 ${tools.length} 支刀具、${jobs.length} 個工件改回備份當時的內容嗎？\n之後修改過的數值會被覆蓋。`)) return;
+  const btns = $('bkPreview').querySelectorAll('button');
+  btns.forEach(b=>b.disabled = true);
+  try{
+    toast('還原中，請稍候...');
+    await writeAll(toolsCollection, tools, n=>toast(`刀具還原中 ${n}/${tools.length}`));
+    await writeAll(jobsCollection, jobs, n=>toast(`工件還原中 ${n}/${jobs.length}`));
+    toast(`還原完成：刀具 ${tools.length} 支、工件 ${jobs.length} 個`);
+    $('bkPreview').innerHTML = `<div class="advice"><b>完成：</b>已還原刀具 ${tools.length} 支、工件 ${jobs.length} 個。</div>`;
+    pendingRestore = null;
+  }catch(e){
+    console.error(e);
+    btns.forEach(b=>b.disabled = false);
+    toast(e.code === 'permission-denied' ? '沒有寫入權限，請確認已登入' : '還原失敗，請檢查網路後再試一次');
+  }
+}
 
 /* 新增/編輯刀具 */
 let editingToolId = null;
@@ -2187,7 +2360,7 @@ $('unitList').addEventListener('input', e=>{
 /* ============ Esc 關閉視窗 ============ */
 document.addEventListener('keydown', e=>{
   if(e.key !== 'Escape') return;
-  ['pickModalBackdrop','jobsModalBackdrop','toolModalBackdrop'].forEach(id=>$(id).classList.remove('active'));
+  ['pickModalBackdrop','jobsModalBackdrop','toolModalBackdrop','backupModalBackdrop'].forEach(id=>$(id).classList.remove('active'));
 });
 
 /* ============ 初始化 ============ */

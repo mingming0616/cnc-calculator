@@ -2,30 +2,26 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 刀具庫
+    // 刀具庫:登入後才能讀寫
     match /tools/{toolId} {
       allow read, delete: if request.auth != null;
-      allow create, update: if request.auth != null && validTool(request.resource.data);
+      allow create, update: if request.auth != null
+                   && request.resource.data.keys().hasAll(['category','name','d','material'])
+                   && request.resource.data.name is string
+                   && request.resource.data.name.size() > 0
+                   && request.resource.data.d is number
+                   && request.resource.data.d > 0;
     }
 
-    // 工件工時表
+    // 工件工時表:登入後才能讀寫
     match /jobs/{jobId} {
       allow read, delete: if request.auth != null;
-      allow create, update: if request.auth != null && validJob(request.resource.data);
-    }
-
-    function validTool(t) {
-      return t.keys().hasOnly(['category','name','erp','brand','d','z','pitch','material','vc','feed','ap','ae','price','lifePcs','note','updatedAt'])
-        && t.category in ['endmill','facemill','drill','reamer','chamfer','tap']
-        && t.name is string && t.name.size() > 0 && t.name.size() <= 100
-        && t.d is number && t.d > 0 && t.d <= 500
-        && (t.erp == '' || t.erp.matches('^[A-Z0-9]{15}$'))
-        && t.note.size() <= 300;
-    }
-
-    function validJob(j) {
-      return j.name is string && j.name.size() > 0 && j.name.size() <= 100
-        && j.ops is list && j.ops.size() <= 60;
+      allow create, update: if request.auth != null
+                   && request.resource.data.keys().hasAll(['name','ops'])
+                   && request.resource.data.name is string
+                   && request.resource.data.name.size() > 0
+                   && request.resource.data.ops is list
+                   && request.resource.data.ops.size() <= 60;
     }
   }
 }
